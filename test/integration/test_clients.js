@@ -137,6 +137,7 @@ describe("Test Clients", () => {
         assert.deepEqual(Object.keys(res), [
           "id",
           "type",
+					"user_data",
           "master_id",
           "master_url",
           "uri",
