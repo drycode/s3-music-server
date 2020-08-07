@@ -1,3 +1,15 @@
+# S3 MusicPlayer
+
+> A simple AWS S3 / Node / React application for playing personal music
+
+![last-commit][last-commit]
+![open-issues][open-url]
+
+As a professional musician and teacher, I have several terrabytes of proprietary audio data. In an attempt to keep my storage costs low, and keep my data highly available, I put together a web application which will allow me to store recordings for a reasonable price in AWS S3 (Infrequent Access). 
+
+Design Considerations
+* I choose to use NodeJS for the backend because it seemed like an appropriate language to serve streaming content. Also, as someone with more experience in Python and synchronous programming patterns, I am using this as an opportunity to practice event-driven programming 
+
 ## Running the server
 
 ```
@@ -30,3 +42,9 @@ _Express middlewares which process the incoming requests before handling them do
 _provides templates which are rendered and served by your routes_
 
 ## Testing
+```bash
+npm test
+```
+
+[open-url]: https://img.shields.io/github/issues-raw/danyoungmusic93/S3PlayMusic.svg
+[last-commit]: https://img.shields.io/github/last-commit/danyoungmusic93/S3PlayMusic.svg
