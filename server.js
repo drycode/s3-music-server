@@ -6,7 +6,7 @@ const { nullAlbum } = require("./models/null_responses.js");
 const { s3Client } = require("./clients/aws_client.js");
 const bodyParser = require("body-parser");
 const discogs = require("./clients/discogs_client");
-const cacheMiddleware = require("./middlewares/cache.js");
+const ServerCache = require("./middlewares/cache.js");
 
 const logger = require("./lib/logger.js");
 const expressPino = require("express-pino-logger");
@@ -16,6 +16,7 @@ const Album = require("./models/album.js");
 const Song = require("./models/song.js");
 
 const defaultCacheTTL = 100;
+const cacheMiddleware = new ServerCache(defaultCacheTTL).expressCachingMiddleware
 
 app.use(bodyParser.json(), expressLogger);
 app.get("", (req, res) => {
@@ -69,3 +70,4 @@ app.get("/artists/:artist/albums/:album/songs/:song/play", (req, res) => {
 app.listen(5000, function () {
   console.log("makin music on 5000");
 });
+

@@ -1,9 +1,6 @@
-const { nullArtist, nullAlbum } = require("../models/null_responses");
 const fs = require("fs");
 const config = require("../config");
-const { sleep } = require("../helpers/utils");
 const axios = require("axios");
-const { s3Client, S3Client } = require("./aws_client");
 const logger = require("../lib/logger");
 
 // axios.defaults.headers.common['Authorization'] = `Discogs token=${accessKey}`

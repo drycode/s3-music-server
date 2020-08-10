@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "mocha --recursive ",
+    "test": "nyc mocha --recursive ",
     "start": "LOG_LEVEL=debug nodemon server.js | ./node_modules/.bin/pino-pretty"
   },
   "author": "",
@@ -17,6 +17,7 @@
     "express": "^4.13.3",
     "express-pino-logger": "^5.0.0",
     "nodemon": "^2.0.2",
+    "nyc": "^15.1.0",
     "pino": "^6.3.2",
     "sinon": "^9.0.2"
   },
