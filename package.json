@@ -19,7 +19,8 @@
     "nodemon": "^2.0.2",
     "nyc": "^15.1.0",
     "pino": "^6.3.2",
-    "sinon": "^9.0.2"
+    "sinon": "^9.0.2",
+    "sinon-test": "^3.0.0"
   },
   "devDependencies": {
     "pino-pretty": "^4.0.0"

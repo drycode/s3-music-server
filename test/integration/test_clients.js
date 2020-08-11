@@ -4,8 +4,10 @@ const assert = require("assert");
 const logger = require("../../lib/logger");
 const { s3Client, S3Client } = require("../../clients/aws_client");
 const discogs = require("../../clients/discogs_client");
-
+const axios = require("axios")
 const sinon = require("sinon");
+const { exception } = require("console");
+// const sandbox = sinon.createSandbox()
 
 function isReadableStream(obj) {
   return (
@@ -83,7 +85,7 @@ describe("Test Clients", () => {
         );
         assert(isReadableStream(bufferStream));
       });
-      it("Checks non-existing song", async () => {});
+      it("Checks non-existing song", async () => { });
     });
     after(() => {
       sinon.restore();
@@ -105,12 +107,27 @@ describe("Test Clients", () => {
       });
       it("Throws TypeError if invalid args passed", async () => {
         const fn = async () => await discogs.getAlbumId("Led Zeppelin");
+        const fn2 = async () => await discogs.getAlbumId(null, "banana")
         assert.rejects(fn, TypeError);
+        assert.rejects(fn2, TypeError);
       });
       it("Checks no album exists raises exception", async () => {
         res = await discogs.getAlbumId("Led Zeppelin", "Baasd;lkj234-9nana");
         assert.equal(res, null);
       });
+      it("Checks proper handling of downstream Promise rejection", async () => {
+        var expectedError = new Error("Testing")
+        var stubAxios = sinon.stub(axios, 'get');
+        stubAxios.returns(new Promise((resolve, reject) => { reject(expectedError) }))
+        try {
+          let res = await discogs.getAlbumId("Led Zeppelin", "In Through the Out Door")
+        } catch (exc) {
+          assert.equal(exc, expectedError)
+        }
+
+        sinon.assert.calledOnce(stubAxios);
+        sinon.restore()
+      })
     });
     describe("getAlbumDetails", () => {
       it("Checks details from existing album", async () => {
@@ -137,7 +154,7 @@ describe("Test Clients", () => {
         assert.deepEqual(Object.keys(res), [
           "id",
           "type",
-					"user_data",
+          "user_data",
           "master_id",
           "master_url",
           "uri",
@@ -146,6 +163,14 @@ describe("Test Clients", () => {
           "cover_image",
           "resource_url",
         ]);
+      });
+      it("Checks return null if details not found", async () => {
+        var stubAxios = sinon.stub(axios, 'get');
+        stubAxios.returns({ data: { results: [] } })
+        const res = await discogs.getArtistDetails("Led Zeppelin");
+        sinon.assert.calledOnce(stubAxios)
+        assert.equal(res, null)
+        sinon.restore()
       });
     });
   });

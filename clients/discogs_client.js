@@ -86,7 +86,7 @@ class DiscogsClient {
     let { data } = await this.axios.get(
       `https://api.discogs.com/database/search?q=${artist}&type=artist`
     );
-    if (data.results) {
+    if (data.results.length > 0) {
       return data.results[0];
     } else {
       return null;

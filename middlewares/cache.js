@@ -31,8 +31,6 @@ class ServerCache {
       if (cacheContent) {
         res.send(cacheContent);
       } else {
-        console.log("Made it here");
-        console.log(res);
         res.sendResponse = res.send;
 
         res.send = (body) => {
