@@ -4,12 +4,10 @@ class ServerCache {
   constructor(TTL = 100) {
     this.data = new Map();
     this.TTL = TTL * 1000;
-    // this.get = this.get.bind(this)
-    // this.put = this.put.bind(this)
-    // this.expressCachingMiddleware = this.expressCachingMiddleware.bind(this)
+    this.expressCachingMiddleware = this.expressCachingMiddleware.bind(this)
   }
 
-  getCachedReq(path) {
+  get(path) {
     let cacheResult = this.data[path];
     if (cacheResult && cacheResult.last_updated > Date.now() - this.TTL) {
       logger.info("Retrieving cached response...");
@@ -18,7 +16,7 @@ class ServerCache {
     return null
   }
 
-  putCachedReq(path, value) {
+  put(path, value) {
     logger.info("Updating cache...");
     this.data[path] = {};
     this.data[path].data = value;
@@ -29,13 +27,14 @@ class ServerCache {
   expressCachingMiddleware() {
     return (req, res, next) => {
       let key = "__express__" + req.originalUrl || req.url;
-      let cacheContent = this.getCachedReq(key);
+      let cacheContent = this.get(key);
+
       if (cacheContent) {
         res.send(cacheContent);
       } else {
         res.sendResponse = res.send;
         res.send = (body) => {
-          this.putCachedReq(key, body);
+          this.put(key, body);
           res.sendResponse(body);
         };
         next();
