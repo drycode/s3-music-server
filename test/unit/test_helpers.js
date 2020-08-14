@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { normalizeSongName } = require("../../helpers/utils");
+const { normalizeSongName, sleep } = require("../../helpers/utils");
 
 describe("Test Helpers", function () {
   describe("normalizeSongName", () => {
@@ -9,6 +9,11 @@ describe("Test Helpers", function () {
       assert.equal(normalizeSongName("04 New Monastery.mp3"), "New Monastery");
       assert.equal(normalizeSongName("06 T.C..mp3", "New Monastery"), "T.C.");
       assert.equal(normalizeSongName("07 15_8.mp3", "New Monastery"), "15/8");
+    });
+  });
+  describe("sleep", () => {
+    it("Checks that sleep returns a Promise of setTimeout", async () => {
+      let res = await sleep(0);
     });
   });
 });

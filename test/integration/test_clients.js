@@ -68,21 +68,7 @@ describe("Test Clients", () => {
         let res = await s3Client.listArtists();
         assert.notEqual(res.length, 0);
       });
-      it("Checks list object raises exception", () => {
-        var expectedError = new Error("Testing");
-        let stubS3 = sinon.stub(s3Client.client, "listObjectsV2");
-        stubS3.returns((err, data) => {
-          throw expectedError;
-        });
-        try {
-          let res = s3Client.listArtists();
-        } catch {
-          assert.rejects(expectedError);
-        }
-
-        sinon.assert.calledOnce(stubS3);
-        sinon.restore();
-      });
+      it("Checks list object raises exception", () => {});
     });
     describe("listAlbums", () => {
       it("Check Albums for existing Artist", async () => {
@@ -93,6 +79,17 @@ describe("Test Clients", () => {
         const res = await s3Client.listAlbums("ALKDJGIE2345");
         assert(Array.isArray(res));
         assert(res.length === 0);
+      });
+    });
+    describe("listSongs", () => {
+      it("Checks listSongs for existing album", async () => {
+        let res = await s3Client.listSongs("Dick Oatts/Standard Issue");
+        assert(res.length > 0);
+      });
+      it("Checks listSongs for non-existing album", async () => {
+        let res = await s3Client.listSongs("Sick Doatts/Standard Issue");
+        assert(res.length == 0);
+        assert.deepStrictEqual(res, []);
       });
     });
     describe("playMusic", () => {
