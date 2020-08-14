@@ -1,13 +1,12 @@
+"use-strict";
 const stream = require("stream");
 
 const assert = require("assert");
 const logger = require("../../lib/logger");
 const { s3Client, S3Client } = require("../../clients/aws_client");
 const discogs = require("../../clients/discogs_client");
-const axios = require("axios")
+const axios = require("axios");
 const sinon = require("sinon");
-const { exception } = require("console");
-// const sandbox = sinon.createSandbox()
 
 function isReadableStream(obj) {
   return (
@@ -20,12 +19,15 @@ function isReadableStream(obj) {
 describe("Test Clients", () => {
   before(() => {
     sinon.replace(logger, "info", sinon.fake());
+    sinon.replace(logger, "error", sinon.fake());
+    sinon.replace(logger, "debug", sinon.fake());
   });
   describe("Test AWS S3 Client", () => {
     describe("getArtistCache", () => {
       it("Checks exists in cache", async () => {
         let res = await s3Client.getArtistCache("Led Zeppelin");
-        assert.deepEqual(Object.keys(res), [
+
+        assert.deepStrictEqual(Object.keys(res), [
           "id",
           "type",
           "user_data",
@@ -66,6 +68,21 @@ describe("Test Clients", () => {
         let res = await s3Client.listArtists();
         assert.notEqual(res.length, 0);
       });
+      it("Checks list object raises exception", () => {
+        var expectedError = new Error("Testing");
+        let stubS3 = sinon.stub(s3Client.client, "listObjectsV2");
+        stubS3.returns((err, data) => {
+          throw expectedError;
+        });
+        try {
+          let res = s3Client.listArtists();
+        } catch {
+          assert.rejects(expectedError);
+        }
+
+        sinon.assert.calledOnce(stubS3);
+        sinon.restore();
+      });
     });
     describe("listAlbums", () => {
       it("Check Albums for existing Artist", async () => {
@@ -85,7 +102,7 @@ describe("Test Clients", () => {
         );
         assert(isReadableStream(bufferStream));
       });
-      it("Checks non-existing song", async () => { });
+      it("Checks non-existing song", async () => {});
     });
     after(() => {
       sinon.restore();
@@ -107,7 +124,7 @@ describe("Test Clients", () => {
       });
       it("Throws TypeError if invalid args passed", async () => {
         const fn = async () => await discogs.getAlbumId("Led Zeppelin");
-        const fn2 = async () => await discogs.getAlbumId(null, "banana")
+        const fn2 = async () => await discogs.getAlbumId(null, "banana");
         assert.rejects(fn, TypeError);
         assert.rejects(fn2, TypeError);
       });
@@ -116,18 +133,25 @@ describe("Test Clients", () => {
         assert.equal(res, null);
       });
       it("Checks proper handling of downstream Promise rejection", async () => {
-        var expectedError = new Error("Testing")
-        var stubAxios = sinon.stub(axios, 'get');
-        stubAxios.returns(new Promise((resolve, reject) => { reject(expectedError) }))
+        var expectedError = new Error("Testing");
+        var stubAxios = sinon.stub(axios, "get");
+        stubAxios.returns(
+          new Promise((resolve, reject) => {
+            reject(expectedError);
+          })
+        );
         try {
-          let res = await discogs.getAlbumId("Led Zeppelin", "In Through the Out Door")
+          let res = await discogs.getAlbumId(
+            "Led Zeppelin",
+            "In Through the Out Door"
+          );
         } catch (exc) {
-          assert.equal(exc, expectedError)
+          assert.equal(exc, expectedError);
         }
 
         sinon.assert.calledOnce(stubAxios);
-        sinon.restore()
-      })
+        sinon.restore();
+      });
     });
     describe("getAlbumDetails", () => {
       it("Checks details from existing album", async () => {
@@ -151,7 +175,7 @@ describe("Test Clients", () => {
     describe("getArtistDetails", () => {
       it("Checks details from existing artist", async () => {
         const res = await discogs.getArtistDetails("Led Zeppelin");
-        assert.deepEqual(Object.keys(res), [
+        assert.deepStrictEqual(Object.keys(res), [
           "id",
           "type",
           "user_data",
@@ -165,12 +189,12 @@ describe("Test Clients", () => {
         ]);
       });
       it("Checks return null if details not found", async () => {
-        var stubAxios = sinon.stub(axios, 'get');
-        stubAxios.returns({ data: { results: [] } })
+        var stubAxios = sinon.stub(axios, "get");
+        stubAxios.returns({ data: { results: [] } });
         const res = await discogs.getArtistDetails("Led Zeppelin");
-        sinon.assert.calledOnce(stubAxios)
-        assert.equal(res, null)
-        sinon.restore()
+        sinon.assert.calledOnce(stubAxios);
+        assert.equal(res, null);
+        sinon.restore();
       });
     });
   });

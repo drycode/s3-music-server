@@ -1,5 +1,3 @@
-// const { nullArtist } = require("../models/null_responses");
-
 const AWS = require("aws-sdk");
 const config = require("../config");
 const logger = require("../lib/logger");

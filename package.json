@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "nyc mocha --recursive ",
+    "test": "nyc mocha --recursive --unhandled-rejections=strict",
     "start": "LOG_LEVEL=debug nodemon server.js | ./node_modules/.bin/pino-pretty"
   },
   "author": "",

@@ -2,8 +2,8 @@ const ServerCache = require("../../middlewares/cache");
 const assert = require("assert");
 const logger = require("../../lib/logger");
 const sinon = require("sinon");
-const songMap = require('../../middlewares/normalize')
-const { normalizeSongName } = require('../../helpers/utils')
+const songMap = require("../../middlewares/normalize");
+const { normalizeSongName } = require("../../helpers/utils");
 
 const serverCache = new ServerCache();
 
@@ -49,21 +49,21 @@ describe("Test Middlewares", () => {
       };
       let res = {
         result: null,
-        send: (content) => { },
+        send: (content) => {},
       };
 
       it("Checks cache content updated on res.send", () => {
-        fn(req, res, () => { });
+        fn(req, res, () => {});
         let cache = { ...serverCache.data };
         res.send("update_cache");
         let updatedCache = { ...serverCache.data };
         assert.notDeepEqual(cache, updatedCache);
       });
       it("Checks cache content overwritten on res.send", () => {
-        fn(req, res, () => { });
+        fn(req, res, () => {});
         res.send("update_cache");
         let cache = { ...serverCache.data };
-        fn(req, res, () => { });
+        fn(req, res, () => {});
         res.send("updated_again");
         let updatedCache = { ...serverCache.data };
         assert.notDeepEqual(cache, updatedCache);
@@ -71,23 +71,23 @@ describe("Test Middlewares", () => {
     });
   });
   describe("Test Normalize Middleware", () => {
-    songMap.putSongTarget("Hello-john.mp3")
+    songMap.putSongTarget("Hello-john.mp3");
     describe("getSongTarget", () => {
       it("Checks song exists in songMap", () => {
-        const res = songMap.getSongTarget("Hello-john")
-        assert.equal(res, "Hello-john.mp3")
-      })
+        const res = songMap.getSongTarget("Hello-john");
+        assert.equal(res, "Hello-john.mp3");
+      });
       it("Checks song does not exist in songMap", () => {
-        const fn = () => songMap.getSongTarget("Hello johnny")
-        assert.throws(fn, Error)
-      })
-    })
+        const fn = () => songMap.getSongTarget("Hello johnny");
+        assert.throws(fn, Error);
+      });
+    });
     describe("putSongTarget", () => {
       it("Checks valid put in songMap", () => {
-        const target = "Hello-john.mp3"
-        const res = songMap.putSongTarget(target)
-        assert.equal(res, normalizeSongName(target))
-      })
-    })
-  })
+        const target = "Hello-john.mp3";
+        const res = songMap.putSongTarget(target);
+        assert.equal(res, normalizeSongName(target));
+      });
+    });
+  });
 });
