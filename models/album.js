@@ -4,30 +4,8 @@ const logger = require("../lib/logger.js");
 const { nullAlbum } = require("../models/null_responses.js");
 
 class Album {
-  async getAlbumsByArtist(artistName) {
-    let response = {};
-
-    let albums = await s3Client.listAlbums(artistName);
-    const promises = albums.map(async (album) => {
-      let result = await discogs.getAlbumId(artistName, album);
-      try {
-        let masterId = result;
-        let tempRes = await discogs.getAlbumDetails(masterId);
-        if (!tempRes) {
-          return [album, nullAlbum];
-        }
-        return [album, tempRes.data];
-      } catch (error) {
-        logger.error(error);
-        return [album, nullAlbum];
-      }
-    });
-
-    const responses = await Promise.all(promises);
-    responses.map((data) => {
-      response[data[0]] = data[1];
-    });
-    return response;
+  constructor(path) {
+    this.reference = path;
   }
 }
 
