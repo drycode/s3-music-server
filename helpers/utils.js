@@ -7,7 +7,7 @@ function normalizeSongName(songTarget) {
 
   // (\.[A-z]{2,4}\d\b) # Matches extensions
   const numberRegEx = songName.match(/(?<=\b)\d+ (?=)/g);
-  const fileExtensionRegEx = songName.match(/\.[A-z]{2,4}\d*\b/g);
+  const fileExtensionRegEx = songName.match(/\.[A-z,\d*\b]{2,4}/g);
   const fraction = songName.match(/\d{1,2}_\d{1,2}/g);
 
   if (numberRegEx) {

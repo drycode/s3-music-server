@@ -7,8 +7,16 @@ describe("Test Helpers", function () {
     it("Should return a normalized string", () => {
       assert.equal(normalizeSongName("Hello.mp3"), "Hello");
       assert.equal(normalizeSongName("04 New Monastery.mp3"), "New Monastery");
-      assert.equal(normalizeSongName("06 T.C..mp3", "New Monastery"), "T.C.");
-      assert.equal(normalizeSongName("07 15_8.mp3", "New Monastery"), "15/8");
+      assert.equal(normalizeSongName("06 T.C..mp3"), "T.C.");
+      assert.equal(normalizeSongName("07 15_8.mp3"), "15/8");
+      assert.equal(
+        normalizeSongName("03 You Are the Night and the Music.m4a"),
+        "You Are the Night and the Music"
+      );
+      assert.equal(
+        normalizeSongName("03 All The Things You Are.m4a"),
+        "All The Things You Are"
+      );
     });
   });
   describe("sleep", () => {

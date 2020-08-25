@@ -3,6 +3,8 @@ const logger = require("../lib/logger.js");
 const discogs = require("../clients/discogs_client");
 const { nullSong } = require("../models/null_responses.js");
 const songMap = require("../middlewares/normalize.js");
+const Artist = require("../models/artist.js");
+const Album = require("../models/album.js");
 
 const { nullAlbum } = require("../models/null_responses.js");
 
@@ -18,10 +20,13 @@ class S3Repository {
 
     const promises = data
       .slice(limit * page, limit * page + limit)
-      .map(async (artist) => {
-        return [artist, await this.s3Client.getArtistCache(artist)];
+      .map(async (name) => {
+        let artist = new Artist(name);
+        return [name, await this.s3Client.getArtistDetails(artist)];
       });
+
     const responses = await Promise.all(promises);
+
     responses.map((data) => {
       // TODO: Clean up
       logger.debug(data[1]);
@@ -34,12 +39,13 @@ class S3Repository {
     return response;
   }
 
-  async getAlbumsByArtist(artistName) {
+  async getAlbumsByArtist(artist) {
     let response = {};
 
-    let albums = await this.s3Client.listAlbums(artistName);
-    const promises = albums.map(async (album) => {
-      let result = await this.discogs.getAlbumId(artistName, album);
+    let albums = await this.s3Client.listAlbums(artist.name);
+    const promises = albums.map(async (albumName) => {
+      album = new Album(albumName, artist.name);
+      let result = await this.discogs.getAlbumId(album);
       try {
         let masterId = result;
         let tempRes = await this.discogs.getAlbumDetails(masterId);
@@ -64,7 +70,7 @@ class S3Repository {
     let songs = await this.s3Client.listSongs(albumPath);
     for (let i = 0; i < songs.length; i++) {
       const song = songs[i];
-      const normalizedSong = songMap.putSongTarget(song);
+      const normalizedSong = songMap.getSongTarget(song);
       songs[i] = normalizedSong;
     }
     return songs;

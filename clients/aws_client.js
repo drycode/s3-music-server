@@ -1,6 +1,8 @@
 const AWS = require("aws-sdk");
 const config = require("../config");
 const logger = require("../lib/logger");
+const songMap = require("../middlewares/normalize");
+const Album = require("../models/album");
 
 class S3Client {
   constructor() {
@@ -44,11 +46,12 @@ class S3Client {
    * @param {string} artistPath The artist prefix used to query albums in s3 by
    * a particular artis
    */
-  listAlbums(artistPath) {
+  listAlbums(artist) {
+    const artistPath = artist.name + "/";
     let params = this.baseParams;
-    params.Prefix = artistPath + "/";
+    params.Prefix = artistPath;
     return new Promise((resolve, reject) => {
-      logger.info(`S3 List Objects Call made: listing ${artistPath} albums`);
+      logger.info(`S3 List Objects Call made: listing ${artist} albums`);
       this.client.listObjectsV2(params, (err, res) => {
         if (err) {
           logger.error(err);
@@ -71,9 +74,10 @@ class S3Client {
    * @param {string} albumPath The artistName/albumName path prefix to used to query
    * songs on a particular album
    */
-  listSongs(albumPath) {
+  listSongs(album) {
+    const albumPath = S3Client.buildAlbumPath(album);
     let params = this.baseParams;
-    params.Prefix = albumPath + "/";
+    params.Prefix = albumPath;
     return new Promise((resolve, reject) => {
       this.client.listObjectsV2(params, (err, res) => {
         if (err) {
@@ -85,6 +89,7 @@ class S3Client {
             let songName = obj.Key.split("/");
             songName = songName[songName.length - 1];
             if (songName) {
+              songMap.putSongTarget(songName);
               this.songPaths.push(songName);
             }
           });
@@ -99,8 +104,10 @@ class S3Client {
    * @param {string} songPath The artistName/albumName/songName path prefix
    * for fetching a specific audio file from S3
    */
-  playMusic(songPath) {
-    let params = { Bucket: config.bucket, Key: songPath };
+  playMusic(song) {
+    const songTarget = S3Client.buildSongPath(song);
+    console.log(songTarget);
+    let params = { Bucket: config.bucket, Key: songTarget };
     return this.client.getObject(params).createReadStream();
   }
 
@@ -109,10 +116,10 @@ class S3Client {
    * @param {string} artistName The artistName, as it exists in the music files bucket
    * @param {*} cacheBucket The name of the bucket used for caching the DiscogsAPI response
    */
-  getArtistCache(artistName, cacheBucket = "discogs-api-cache") {
+  getArtistDetails(artist, cacheBucket = "discogs-api-cache") {
     return new Promise((resolve, reject) => {
       // try {
-      let key = `artists/${S3Client.normalizeArtistName(artistName)}.json`;
+      let key = `artists/${S3Client.normalizeArtistName(artist.name)}.json`;
       this.client.getObject({ Bucket: cacheBucket, Key: key }, (err, res) => {
         if (err) {
           reject(err);
@@ -129,10 +136,10 @@ class S3Client {
    * @param {Object} jsonObj The jsonFile in object form to be pushed to s3
    * @param {*} cacheBucket The name of the bucket used for caching the DiscogsAPI response
    */
-  putArtistCache(artistName, jsonObj, cacheBucket = "discogs-api-cache") {
+  putArtistDetails(artist, jsonObj, cacheBucket = "discogs-api-cache") {
     const params = {
       Bucket: cacheBucket,
-      Key: `artists/${S3Client.normalizeArtistName(artistName)}.json`,
+      Key: `artists/${S3Client.normalizeArtistName(artist.name)}.json`,
       Body: Buffer.from(JSON.stringify(jsonObj), "binary"),
     };
 
@@ -153,12 +160,23 @@ class S3Client {
   static normalizeArtistName(artistName) {
     return artistName.replace(/ /g, "-").replace(/\//g, "");
   }
+
+  static buildAlbumPath(album) {
+    return `${album.artist}/${album.name}/`;
+  }
+
+  static buildSongPath(song) {
+    let songName;
+    try {
+      songName = songMap.getSongTarget(song.name);
+    } catch {
+      const _ = this.listSongs(new Album(song.artist, song.album));
+      songName = songMap.getSongTarget(song.name);
+    }
+    return `${song.artist}/${song.album}/${songName}`;
+  }
 }
 
 const s3Client = new S3Client();
-// s3Client.putArtistCache("Led Zeppelin").then(res => console.log(res))
-// s3Client.getArtistCache("Led Zeppelin").then(res => {
-//   console.log(res)
-// })
 
 module.exports = { s3Client, S3Client };

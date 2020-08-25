@@ -9,9 +9,9 @@ class SongMap {
   getSongTarget(songName) {
     const songTarget = this.songMap[songName];
     if (!songTarget) {
-      const msg = "Invalid song name from client"
+      const msg = "Invalid song name from client";
       logger.error(msg);
-      throw new Error("Invalid song name from client")
+      throw new Error("Invalid song name from client");
     }
     return songTarget;
   }

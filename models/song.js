@@ -4,6 +4,25 @@ const logger = require("../lib/logger.js");
 const { nullSong } = require("../models/null_responses.js");
 const songMap = require("../middlewares/normalize.js");
 
-class Song {}
+class Song {
+  constructor(artist, album, name) {
+    this._name = name;
+    this._album = album;
+    this._artist = artist;
+    this.details = nullSong;
+  }
 
-module.exports = new Song();
+  get name() {
+    return this._name;
+  }
+
+  get album() {
+    return this._album;
+  }
+
+  get artist() {
+    return this._artist;
+  }
+}
+
+module.exports = Song;

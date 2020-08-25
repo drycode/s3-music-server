@@ -25,28 +25,30 @@ class DiscogsClient {
   /**
    * Returns the album Id for discogs API's best guess, or first result, given the params
    */
-  async getAlbumId(artist, album) {
-    const checkArgs = () => {
-      let missingArgs = 2;
-      if (!(artist && album)) {
-        missingArgs = !artist ? (missingArgs += 1) : missingArgs;
-        missingArgs = !album ? (missingArgs += 1) : missingArgs;
-        return missingArgs;
-      }
-      return null;
-    };
-    let artistName = encodeURI(artist);
-    let albumName = encodeURI(album);
+  async getAlbumId(album) {
+    let albumName = album.name;
+    let artistName = album.artist;
+    // const checkArgs = () => {
+    //   let missingArgs = 2;
+    //   if (!artistName || !albumName) {
+    //     missingArgs = !artistName ? (missingArgs += 1) : missingArgs;
+    //     missingArgs = !albumName ? (missingArgs += 1) : missingArgs;
+    //     return missingArgs;
+    //   }
+    //   return null;
+    // };
+    artistName = encodeURI(artistName);
+    albumName = encodeURI(albumName);
 
-    const missingArgs = checkArgs();
+    // const missingArgs = checkArgs();
     const promise = new Promise((resolve, reject) => {
-      if (missingArgs) {
-        reject(
-          new TypeError(
-            `getAlbumId requires at least 2 arguments, but only ${missingArgs} were passed`
-          )
-        );
-      }
+      // if (missingArgs) {
+      //   reject(
+      //     new TypeError(
+      //       `getAlbumId requires at least 2 arguments, but only ${missingArgs} were passed`
+      //     )
+      //   );
+      // }
       this.axios
         .get(
           `https://api.discogs.com/database/search?q=${albumName}&type=album&artist=${artistName}`
@@ -83,8 +85,9 @@ class DiscogsClient {
    * Returns the best guess artist details from the discogs API
    */
   async getArtistDetails(artist) {
+    const artistName = artist.name;
     let { data } = await this.axios.get(
-      `https://api.discogs.com/database/search?q=${artist}&type=artist`
+      `https://api.discogs.com/database/search?q=${artistName}&type=artist`
     );
     if (data.results.length > 0) {
       return data.results[0];

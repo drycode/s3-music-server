@@ -1,6 +1,13 @@
-const { s3Client } = require("../clients/aws_client.js");
-const logger = require("../lib/logger.js");
+const { nullArtist } = require("./null_responses.js");
 
-class Artist {}
+class Artist {
+  constructor(name) {
+    this._name = name;
+    this.details = nullArtist;
+  }
+  get name() {
+    return this._name;
+  }
+}
 
-module.exports = new Artist();
+module.exports = Artist;
