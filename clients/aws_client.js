@@ -2,10 +2,12 @@ const AWS = require("aws-sdk");
 const config = require("../config");
 const logger = require("../lib/logger");
 const songMap = require("../middlewares/normalize");
+const { normalizeArtistName } = require("../helpers/utils");
 const Album = require("../models/album");
+const { S3 } = require("aws-sdk");
 
 class S3Client {
-  constructor() {
+  constructor(cacheTTL = 60) {
     AWS.config.credentials = new AWS.SharedIniFileCredentials({
       profile: config.profile,
     });
@@ -17,22 +19,25 @@ class S3Client {
       Bucket: config.bucket /* required */,
       Delimiter: "/",
     };
+    this.TTL = cacheTTL * 1000;
+    this.lastRefreshed = Date.now();
   }
 
   /**
    * Calls listObjects on the music bucket and parses a list of "artistNames"
    */
   listArtists() {
+    if (!this.cacheTimedOut() && this.artistNames.length > 0) {
+      return new Promise((resolve) => resolve(this.artistNames));
+    }
     return new Promise((resolve, reject) => {
       this.client.listObjectsV2(this.baseParams, (err, res) => {
         if (err) {
           reject(err);
         } else {
-          if (this.artistNames.length == 0) {
-            logger.debug("S3 List Objects Call made: listing artists");
-            for (let i in res.CommonPrefixes) {
-              this.artistNames.push(res.CommonPrefixes[i].Prefix);
-            }
+          logger.debug("S3 List Objects Call made: listing artists");
+          for (let i in res.CommonPrefixes) {
+            this.artistNames.push(res.CommonPrefixes[i].Prefix);
           }
           resolve(this.artistNames);
         }
@@ -43,11 +48,10 @@ class S3Client {
   /**
    * Calls listObjects with an artistName prefix to compile a list of "albumNames"
    * for a particular artist
-   * @param {string} artistPath The artist prefix used to query albums in s3 by
-   * a particular artis
+   * @param {Object} artist The artist object as defined in models/artist.js
    */
   listAlbums(artist) {
-    const artistPath = artist.name + "/";
+    const artistPath = S3Client.buildArtistPath(artist);
     let params = this.baseParams;
     params.Prefix = artistPath;
     return new Promise((resolve, reject) => {
@@ -71,8 +75,7 @@ class S3Client {
   /**
    * Calls listObjects with an artistName/albumName prefix to fetch songs for a given
    * artist and album
-   * @param {string} albumPath The artistName/albumName path prefix to used to query
-   * songs on a particular album
+   * @param {Object} album The album object as defined in models/album.js
    */
   listSongs(album) {
     const albumPath = S3Client.buildAlbumPath(album);
@@ -101,25 +104,23 @@ class S3Client {
 
   /**
    * Returns a read stream object for an audio file.
-   * @param {string} songPath The artistName/albumName/songName path prefix
-   * for fetching a specific audio file from S3
+   * @param {Object} song The song object as defined in models/song.js
    */
   playMusic(song) {
     const songTarget = S3Client.buildSongPath(song);
-    console.log(songTarget);
     let params = { Bucket: config.bucket, Key: songTarget };
     return this.client.getObject(params).createReadStream();
   }
 
   /**
    * Requests the artist information from the s3 cache
-   * @param {string} artistName The artistName, as it exists in the music files bucket
+   * @param {Object} artist The artist object as defined in models/artist.js
    * @param {*} cacheBucket The name of the bucket used for caching the DiscogsAPI response
    */
   getArtistDetails(artist, cacheBucket = "discogs-api-cache") {
     return new Promise((resolve, reject) => {
       // try {
-      let key = `artists/${S3Client.normalizeArtistName(artist.name)}.json`;
+      let key = S3Client.buildArtistDetailsPath(artist);
       this.client.getObject({ Bucket: cacheBucket, Key: key }, (err, res) => {
         if (err) {
           reject(err);
@@ -132,14 +133,14 @@ class S3Client {
 
   /**
    *
-   * @param {string} artistName The artistName, as it exists in the music files bucket
+   * @param {Object} artist The artist object as defined in models/artist.js
    * @param {Object} jsonObj The jsonFile in object form to be pushed to s3
    * @param {*} cacheBucket The name of the bucket used for caching the DiscogsAPI response
    */
   putArtistDetails(artist, jsonObj, cacheBucket = "discogs-api-cache") {
     const params = {
       Bucket: cacheBucket,
-      Key: `artists/${S3Client.normalizeArtistName(artist.name)}.json`,
+      Key: S3Client.buildArtistDetailsPath(artist),
       Body: Buffer.from(JSON.stringify(jsonObj), "binary"),
     };
 
@@ -153,12 +154,19 @@ class S3Client {
     });
   }
 
-  /**
-   * Normalizes the artist name string for more reliability in our caching file structure
-   * @param {string} artistName The name of an artist as seen in s3
-   */
-  static normalizeArtistName(artistName) {
-    return artistName.replace(/ /g, "-").replace(/\//g, "");
+  cacheTimedOut() {
+    if (this.lastRefreshed + this.TTL > Date.now()) {
+      return false;
+    }
+    return true;
+  }
+
+  static buildArtistDetailsPath(artist) {
+    return `artists/${normalizeArtistName(artist.name)}.json`;
+  }
+
+  static buildArtistPath(artist) {
+    return artist.name + "/";
   }
 
   static buildAlbumPath(album) {

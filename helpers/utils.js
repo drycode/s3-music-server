@@ -26,4 +26,11 @@ function normalizeSongName(songTarget) {
   return songName;
 }
 
-module.exports = { sleep, normalizeSongName };
+/**
+ * Normalizes the artist name string for more reliability in our caching file structure
+ * @param {string} artistName The name of an artist as seen in s3
+ */
+function normalizeArtistName(artistName) {
+  return artistName.replace(/ /g, "-").replace(/\//g, "");
+}
+module.exports = { sleep, normalizeSongName, normalizeArtistName };

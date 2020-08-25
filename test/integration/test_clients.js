@@ -71,6 +71,12 @@ describe("Test Clients", () => {
         let res = await s3Client.listArtists();
         assert.notEqual(res.length, 0);
       });
+      it("Checks valid cache implementation", async () => {
+        const start = Date.now();
+        const res = await s3Client.listArtists();
+        const end = Date.now();
+        assert(1 >= end - start);
+      });
       it("Checks list object raises exception", () => {});
     });
     describe("listAlbums", () => {

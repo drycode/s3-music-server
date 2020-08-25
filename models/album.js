@@ -4,9 +4,10 @@ const logger = require("../lib/logger.js");
 const { nullAlbum } = require("../models/null_responses.js");
 
 class Album {
-  constructor(artist, name) {
+  constructor(artist, name, songs = null) {
     this._name = name;
     this._artist = artist;
+    this._songs = songs;
     this.details = nullAlbum;
   }
   get name() {
@@ -21,6 +22,15 @@ class Album {
       throw new Error("Must have a valid artist associated with an Album");
     }
     return this._artist;
+  }
+
+  get songs() {
+    return this._songs;
+  }
+  set songs(songs) {
+    // Validate song updates
+    this._songs = songs;
+    f;
   }
 }
 
