@@ -8,15 +8,15 @@ const logger = require("../lib/logger");
 class DiscogsClient {
   constructor(accessTokenPath = config.discogsAccessTokenPath) {
     this.axios = axios;
-    this.accessKey = this.getDiscogsToken();
+    this.accessKey = this.getDiscogsToken(accessTokenPath);
     this.axios.defaults.headers.common[
       "Authorization"
     ] = `Discogs token=${this.accessKey}`;
   }
 
-  getDiscogsToken() {
+  getDiscogsToken(accessTokenPath) {
     const accessKey = fs
-      .readFileSync(config.discogsAccessTokenPath, "utf-8")
+      .readFileSync(accessTokenPath, "utf-8")
       .split(" = ")[1]
       .trim();
     return accessKey;

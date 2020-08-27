@@ -5,6 +5,7 @@ const assert = require("assert");
 const logger = require("../../lib/logger");
 const { s3Client, S3Client } = require("../../clients/aws_client");
 const discogs = require("../../clients/discogs_client");
+const config = require("../../config");
 const axios = require("axios");
 const sinon = require("sinon");
 
@@ -109,7 +110,6 @@ describe("Test Clients", () => {
       it("Checks existing song returns buffer", async () => {
         let bufferStream = s3Client.playMusic(
           new Song("Dick Oatts", "Standard Issue", "All The Things You Are")
-          // "Dick Oatts/Standard Issue/03 All The Things You Are.m4a"
         );
         assert(isReadableStream(bufferStream));
       });
@@ -122,7 +122,10 @@ describe("Test Clients", () => {
   describe("Test Discogs Client", () => {
     describe("getDiscogsToken", () => {
       it("Checks that the discogs token get's fetched properly", () => {
-        assert(typeof discogs.getDiscogsToken(), String);
+        assert(
+          typeof discogs.getDiscogsToken(config.discogsAccessTokenPath),
+          String
+        );
       });
     });
     describe("getAlbumId", () => {
@@ -202,5 +205,8 @@ describe("Test Clients", () => {
         sinon.restore();
       });
     });
+  });
+  after(() => {
+    sinon.restore();
   });
 });

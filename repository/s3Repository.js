@@ -1,5 +1,5 @@
 const { s3Client } = require("../clients/aws_client.js");
-const logger = require("../lib/logger.js");
+const logger = require("../lib/logger");
 const discogs = require("../clients/discogs_client");
 const { nullSong } = require("../models/null_responses.js");
 const songMap = require("../middlewares/normalize.js");
@@ -39,47 +39,36 @@ class S3Repository {
     return response;
   }
 
+  /**
+   * TODO: Currently very slow when returning several albums by a single artist because of the discogs calls
+   * Solution 1: Cache in S3 and call the S3 cache and Discogs API's concurrently, take whatever comes
+   *   back with a valid response first
+   * Solution 2: Redis Cache with discogs failover
+   */
   async getAlbumsByArtist(artist) {
-    let response = {};
-
-    let albums = await this.s3Client.listAlbums(artist.name);
-    const promises = albums.map(async (albumName) => {
-      album = new Album(albumName, artist.name);
-      let result = await this.discogs.getAlbumId(album);
-      try {
-        let masterId = result;
-        let tempRes = await this.discogs.getAlbumDetails(masterId);
-        if (!tempRes) {
-          return [album, nullAlbum];
-        }
-        return [album, tempRes.data];
-      } catch (error) {
-        logger.error(error);
-        return [album, nullAlbum];
-      }
+    let albums = [];
+    let albumNames = await this.s3Client.listAlbums(artist);
+    albumNames.map((albumName) => {
+      albums.push(new Album(artist, albumName));
     });
-
-    const responses = await Promise.all(promises);
-    responses.map((data) => {
-      response[data[0]] = data[1];
-    });
-    return response;
+    return albums;
   }
 
-  async getSongsByAlbum(albumPath) {
-    let songs = await this.s3Client.listSongs(albumPath);
+  async getSongsByAlbum(album) {
+    let songs = await this.s3Client.listSongs(album);
     for (let i = 0; i < songs.length; i++) {
       const song = songs[i];
-      const normalizedSong = songMap.getSongTarget(song);
-      songs[i] = normalizedSong;
+      songMap.putSongTarget(song);
     }
     return songs;
   }
 
-  async downloadAudioFile(artist, album, song, res) {
-    const songTarget = songMap.getSongTarget(song);
-    const songPath = `${artist}/${album}/${songTarget}`;
-    let downloadStream = this.s3Client.playMusic(songPath);
+  async downloadAudioFile(song, res) {
+    const artist = song.artist;
+    const album = song.album;
+    const songName = song.name;
+
+    let downloadStream = this.s3Client.playMusic(song);
     logger.info("Request for song initiated");
     res.set("content-type", "audio/mp3");
     res.set("accept-ranges", "bytes");

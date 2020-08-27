@@ -17,6 +17,10 @@ describe("Test Helpers", function () {
         normalizeSongName("03 All The Things You Are.m4a"),
         "All The Things You Are"
       );
+      assert.equal(
+        normalizeSongName("03 Led Zeppelin - Fool In The Rain.mp3"),
+        "Led Zeppelin - Fool In The Rain"
+      );
     });
   });
   describe("sleep", () => {
