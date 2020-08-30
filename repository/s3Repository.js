@@ -1,12 +1,9 @@
 const { s3Client } = require("../clients/aws_client.js");
 const logger = require("../lib/logger");
 const discogs = require("../clients/discogs_client");
-const { nullSong } = require("../models/null_responses.js");
-const songMap = require("../middlewares/normalize.js");
-const Artist = require("../models/artist.js");
-const Album = require("../models/album.js");
 
-const { nullAlbum } = require("../models/null_responses.js");
+const songMap = require("../middlewares/normalize.js");
+const { Artist } = require("../models/models.js");
 
 class S3Repository {
   constructor(s3_client, discogs_client) {
@@ -46,12 +43,8 @@ class S3Repository {
    * Solution 2: Redis Cache with discogs failover
    */
   async getAlbumsByArtist(artist) {
-    let albums = [];
     let albumNames = await this.s3Client.listAlbums(artist);
-    albumNames.map((albumName) => {
-      albums.push(new Album(artist, albumName));
-    });
-    return albums;
+    return albumNames;
   }
 
   async getSongsByAlbum(album) {
@@ -64,10 +57,6 @@ class S3Repository {
   }
 
   async downloadAudioFile(song, res) {
-    const artist = song.artist;
-    const album = song.album;
-    const songName = song.name;
-
     let downloadStream = this.s3Client.playMusic(song);
     logger.info("Request for song initiated");
     res.set("content-type", "audio/mp3");
@@ -84,11 +73,9 @@ class S3Repository {
 
     downloadStream.on("data", (chunk) => {
       res.write(chunk);
-      logger.debug("Rendering chunk...");
     });
 
     downloadStream.on("end", () => {
-      logger.info("Download Complete.");
       res.end();
     });
   }

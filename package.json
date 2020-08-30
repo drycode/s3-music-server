@@ -24,6 +24,6 @@
     "sinon-test": "^3.0.0"
   },
   "devDependencies": {
-    "pino-pretty": "^4.0.0"
+    "pino-pretty": "^4.2.0"
   }
 }

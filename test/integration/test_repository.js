@@ -1,19 +1,16 @@
 const sinon = require("sinon");
-const repo = require("../../repository/s3Repository");
-const repository = require("../../repository/abstractRepository");
-const discRepo = require("../../repository/discogsRepository");
+const Repository = require("../../repository/abstractRepository");
 const assert = require("assert");
 const logger = require("../../lib/logger");
-const { promises } = require("fs");
-const { type } = require("os");
-const Artist = require("../../models/artist");
-const Album = require("../../models/album");
-const Song = require("../../models/song");
-const abstractRepo = new repository(repo, discRepo);
+const { Artist, Album, Song } = require("../../models/models");
+const s3Repo = require("../../repository/s3Repository");
+const discRepo = require("../../repository/discogsRepository");
+
+const repo = new Repository(s3Repo, discRepo);
 
 describe("Test S3 Repository", () => {
   beforeEach(() => {
-    sinon.replace(logger, "info", sinon.fake());
+    // sinon.replace(logger, "info", sinon.fake());
     sinon.replace(logger, "error", sinon.fake());
     sinon.replace(logger, "debug", sinon.fake());
   });
@@ -41,13 +38,19 @@ describe("Test S3 Repository", () => {
       assert(typeof res == "object");
 
       const key = Object.keys(res)[0];
-      console.log(key);
       const artist = res[key];
 
       assert.deepEqual(Object.keys(artist), keys);
     });
   });
-  describe("getAlbumsByArtist", () => {
+  describe("getAlbum", () => {
+    it("Checks album with details is successfully fetched", async () => {
+      const artist = new Artist("Led Zeppelin");
+      const res = await repo.getAlbum(artist, "Coda");
+      assert.equal(res.title, "Coda");
+    });
+  });
+  describe("getAlbums", () => {
     it("Checks albums by valid artist", async () => {
       const keys = [
         "BBC Sessions [Disc 2] [Live]",
@@ -68,36 +71,38 @@ describe("Test S3 Repository", () => {
         "The Song Remains The Same [Disc 2] [Live]",
       ];
       const artist = new Artist("Led Zeppelin");
-      const res = await abstractRepo.getAlbums(artist);
+      const res = await repo.getAlbums(artist);
+
       assert.deepEqual(Object.keys(res), keys);
     });
-    it("Checks invalid artist", async () => {
-      const res = await abstractRepo.getAlbums("a;lkasdbg");
-      assert.deepEqual(res, {});
-    });
+    // it("Checks invalid artist", async () => {
+    //   const artist = new Artist("a;lkasdbg");
+    //   const res = await repo.getAlbums(artist);
+    //   assert.deepEqual(res, {});
+    // });
   });
   describe("getSongsByAlbum", async () => {
     it("Checks valid album", async () => {
       const album = new Album("Led Zeppelin", "Led Zeppelin I");
-      const res = await repo.getSongsByAlbum(album);
+      const res = await repo.getSongs(album);
       assert(Object.keys(res).length > 0);
     });
     it("Checks invalid album", async () => {
       const album = new Album(";lkasd", "asdlkjg");
-      const res = await repo.getSongsByAlbum(album);
+      const res = await repo.getSongs(album);
       assert.deepStrictEqual(res, []);
     });
   });
   describe("downloadAudioFile", () => {
     it("Checks download valid song", async () => {
       const album = new Album("Led Zeppelin", "In Through The Out Door");
-      await repo.getSongsByAlbum(album);
+      await repo.getSongs(album);
       const song = new Song(
         "Led Zeppelin",
         "In Through The Out Door",
         "Led Zeppelin - Fool In The Rain"
       );
-      const res = repo.downloadAudioFile(song, {
+      const res = repo.getSong(song, {
         set: () => {},
         write: () => {},
         end: () => {},
@@ -107,5 +112,9 @@ describe("Test S3 Repository", () => {
   });
   afterEach(() => {
     sinon.restore();
+  });
+  after(() => {
+    sinon.restore();
+    repo.cache.client.end(true);
   });
 });

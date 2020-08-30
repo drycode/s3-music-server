@@ -3,8 +3,6 @@ const config = require("../config");
 const axios = require("axios");
 const logger = require("../lib/logger");
 
-// axios.defaults.headers.common['Authorization'] = `Discogs token=${accessKey}`
-
 class DiscogsClient {
   constructor(accessTokenPath = config.discogsAccessTokenPath) {
     this.axios = axios;
@@ -28,27 +26,8 @@ class DiscogsClient {
   async getAlbumId(album) {
     let albumName = album.name;
     let artistName = album.artist;
-    // const checkArgs = () => {
-    //   let missingArgs = 2;
-    //   if (!artistName || !albumName) {
-    //     missingArgs = !artistName ? (missingArgs += 1) : missingArgs;
-    //     missingArgs = !albumName ? (missingArgs += 1) : missingArgs;
-    //     return missingArgs;
-    //   }
-    //   return null;
-    // };
-    artistName = encodeURI(artistName);
-    albumName = encodeURI(albumName);
-
-    // const missingArgs = checkArgs();
+    logger.debug("getAlbumId: " + albumName + " " + artistName);
     const promise = new Promise((resolve, reject) => {
-      // if (missingArgs) {
-      //   reject(
-      //     new TypeError(
-      //       `getAlbumId requires at least 2 arguments, but only ${missingArgs} were passed`
-      //     )
-      //   );
-      // }
       this.axios
         .get(
           `https://api.discogs.com/database/search?q=${albumName}&type=album&artist=${artistName}`
@@ -73,7 +52,6 @@ class DiscogsClient {
         .get(`https://api.discogs.com/masters/${masterId}`)
         .then((data) => {
           resolve(data);
-          logger.debug(data);
         })
         .catch((err) => {
           reject(err);

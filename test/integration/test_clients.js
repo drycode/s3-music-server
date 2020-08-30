@@ -3,15 +3,13 @@ const stream = require("stream");
 
 const assert = require("assert");
 const logger = require("../../lib/logger");
-const { s3Client, S3Client } = require("../../clients/aws_client");
+const { s3Client } = require("../../clients/aws_client");
 const discogs = require("../../clients/discogs_client");
 const config = require("../../config");
 const axios = require("axios");
 const sinon = require("sinon");
 
-const Artist = require("../../models/artist");
-const Album = require("../../models/album");
-const Song = require("../../models/song");
+const { Artist, Album, Song } = require("../../models/models");
 
 function isReadableStream(obj) {
   return (

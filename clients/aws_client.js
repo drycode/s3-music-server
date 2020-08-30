@@ -3,8 +3,7 @@ const config = require("../config");
 const logger = require("../lib/logger");
 const songMap = require("../middlewares/normalize");
 const { normalizeArtistName } = require("../helpers/utils");
-const Album = require("../models/album");
-const { S3 } = require("aws-sdk");
+const Album = require("../models/models");
 
 class S3Client {
   constructor(cacheTTL = 60) {
