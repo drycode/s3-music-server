@@ -1,5 +1,5 @@
 const sinon = require("sinon");
-const Repository = require("../../repository/abstractRepository");
+const Repository = require("../../repository/repository");
 const assert = require("assert");
 const logger = require("../../lib/logger");
 const { Artist, Album, Song } = require("../../models/models");
@@ -10,7 +10,7 @@ const repo = new Repository(s3Repo, discRepo);
 
 describe("Test S3 Repository", () => {
   beforeEach(() => {
-    // sinon.replace(logger, "info", sinon.fake());
+    sinon.replace(logger, "info", sinon.fake());
     sinon.replace(logger, "error", sinon.fake());
     sinon.replace(logger, "debug", sinon.fake());
   });

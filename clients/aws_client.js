@@ -3,7 +3,7 @@ const config = require("../config");
 const logger = require("../lib/logger");
 const songMap = require("../middlewares/normalize");
 const { normalizeArtistName } = require("../helpers/utils");
-const Album = require("../models/models");
+const { Album } = require("../models/models");
 
 class S3Client {
   constructor(cacheTTL = 60) {
@@ -107,6 +107,7 @@ class S3Client {
    */
   playMusic(song) {
     const songTarget = S3Client.buildSongPath(song);
+    console.log(songTarget);
     let params = { Bucket: config.bucket, Key: songTarget };
     return this.client.getObject(params).createReadStream();
   }
@@ -177,7 +178,7 @@ class S3Client {
     try {
       songName = songMap.getSongTarget(song.name);
     } catch {
-      const _ = this.listSongs(new Album(song.artist, song.album));
+      songMap.putSongTarget(song.name);
       songName = songMap.getSongTarget(song.name);
     }
     return `${song.artist}/${song.album}/${songName}`;
