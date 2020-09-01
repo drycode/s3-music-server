@@ -36,7 +36,9 @@ class S3Client {
         } else {
           logger.debug("S3 List Objects Call made: listing artists");
           for (let i in res.CommonPrefixes) {
-            this.artistNames.push(res.CommonPrefixes[i].Prefix);
+            this.artistNames.push(
+              res.CommonPrefixes[i].Prefix.replace("/", "")
+            );
           }
           resolve(this.artistNames);
         }
@@ -107,7 +109,6 @@ class S3Client {
    */
   playMusic(song) {
     const songTarget = S3Client.buildSongPath(song);
-    console.log(songTarget);
     let params = { Bucket: config.bucket, Key: songTarget };
     return this.client.getObject(params).createReadStream();
   }
@@ -178,7 +179,7 @@ class S3Client {
     try {
       songName = songMap.getSongTarget(song.name);
     } catch {
-      songMap.putSongTarget(song.name);
+      // songMap.putSongTarget(song.name);
       songName = songMap.getSongTarget(song.name);
     }
     return `${song.artist}/${song.album}/${songName}`;

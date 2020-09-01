@@ -1,22 +1,20 @@
 const express = require("express");
-const app = express();
 const path = require("path");
-const { nullAlbum } = require("./models/null_responses.js");
-
-const { s3Client } = require("./clients/aws_client.js");
 const bodyParser = require("body-parser");
-const discogs = require("./clients/discogs_client");
-const ServerCache = require("./middlewares/cache.js");
 
 const logger = require("./lib/logger.js");
-const expressPino = require("express-pino-logger");
-const expressLogger = expressPino({ logger });
-const Artist = require("./models/artist.js");
-const Album = require("./models/album.js");
-const Song = require("./models/song.js");
-const S3Repo = require("./repository/s3Repository.js");
+const Repository = require("./repository/repository.js");
+const s3Repo = require("./repository/s3Repository");
+const discRepo = require("./repository/discogsRepository");
+const ServerCache = require("./middlewares/cache.js");
 
-const defaultCacheTTL = 100;
+const expressPino = require("express-pino-logger");
+const { Artist, Song, Album } = require("./models/models.js");
+const expressLogger = expressPino({ logger });
+
+const repo = new Repository(s3Repo, discRepo, 0);
+const app = express();
+const defaultCacheTTL = 0;
 const cacheMiddleware = new ServerCache(defaultCacheTTL)
   .expressCachingMiddleware;
 
@@ -31,12 +29,12 @@ app.get("/test", (req, res) => {
 
 app.get("/artists", cacheMiddleware(defaultCacheTTL), async (req, res) => {
   if (req.query.limit & req.query.page) {
-    response = await S3Repo.getArtists(
+    response = await repo.getArtists(
       parseInt(req.query.limit),
       parseInt(req.query.page)
     );
   } else {
-    response = await S3Repo.getArtists();
+    response = await repo.getArtists();
   }
   res.send(response);
 });
@@ -45,7 +43,8 @@ app.get(
   "/artists/:artist/albums",
   cacheMiddleware(defaultCacheTTL),
   async (req, res) => {
-    response = await S3Repo.getAlbumsByArtist(req.params.artist);
+    const artist = new Artist(req.params.artist);
+    response = await repo.getAlbums(artist);
     res.send(response);
   }
 );
@@ -54,19 +53,15 @@ app.get(
   "/artists/:artist/albums/:album/songs",
   cacheMiddleware(defaultCacheTTL),
   async (req, res) => {
-    let albumPath = `${req.params.artist}/${req.params.album}`;
-    response = await S3Repo.getSongsByAlbum(albumPath);
+    const album = new Album(req.params.artist, req.params.album);
+    response = await repo.getSongs(album);
     res.send(response);
   }
 );
 
 app.get("/artists/:artist/albums/:album/songs/:song/play", (req, res) => {
-  S3Repo.downloadAudioFile(
-    req.params.artist,
-    req.params.album,
-    req.params.song,
-    res
-  );
+  const song = new Song(req.params.artist, req.params.album, req.params.song);
+  repo.getSong(song, res);
 });
 
 app.listen(5000, function () {

@@ -1,5 +1,7 @@
-const { nullAlbum, nullSong, nullArtist } = require("./null_responses.js");
-
+const { nullSong, nullArtist, nullAlbum } = require("./null_responses.js");
+const { normalizeSongName } = require("../helpers/utils");
+const logger = require("../lib/logger");
+const _ = require("lodash");
 class Album {
   constructor(artist, name, songs = null, details = null) {
     this._name = name;
@@ -33,8 +35,24 @@ class Album {
   get details() {
     return this._details;
   }
+
   set details(details) {
-    this._details = details;
+    const keys = Object.keys(nullAlbum);
+    let temp = _.pick(details, keys);
+    for (let i in keys) {
+      let key = keys[i];
+      if (_.isArray(details[key]) && _.isObject(details[key][0])) {
+        const result = _.map(
+          details[key],
+          _.partialRight(_.pick, Object.keys(nullAlbum[key][0]))
+        );
+        logger.info(result);
+        temp[key] = result;
+      }
+    }
+
+    this._details = temp;
+    // this._details = _.pick(details, Object.keys(nullAlbum));
   }
 }
 
@@ -58,7 +76,7 @@ class Artist {
 
 class Song {
   constructor(artist, album, name) {
-    this._name = name;
+    this._name = normalizeSongName(name);
     this._album = album;
     this._artist = artist;
     this.details = nullSong;

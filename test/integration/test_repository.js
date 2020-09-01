@@ -8,7 +8,7 @@ const discRepo = require("../../repository/discogsRepository");
 
 const repo = new Repository(s3Repo, discRepo);
 
-describe("Test S3 Repository", () => {
+describe("Test Repository", () => {
   beforeEach(() => {
     sinon.replace(logger, "info", sinon.fake());
     sinon.replace(logger, "error", sinon.fake());
@@ -47,7 +47,7 @@ describe("Test S3 Repository", () => {
     it("Checks album with details is successfully fetched", async () => {
       const artist = new Artist("Led Zeppelin");
       const res = await repo.getAlbum(artist, "Coda");
-      assert.equal(res.title, "Coda");
+      assert.equal(res.name, "Coda");
     });
   });
   describe("getAlbums", () => {

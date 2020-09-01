@@ -26,6 +26,7 @@ class Repository {
       getSongs: this.buildCacheKey`artist:${0}:albums:${1}:songs`,
     };
   }
+
   async getArtists(limit = 10, page = 2) {
     const key = this.cachingKeys.getArtists(limit, page);
     return this.tryCache(key, async () => {
@@ -62,10 +63,11 @@ class Repository {
   async getAlbum(artist, albumName) {
     let album = new Album(artist.name, albumName);
     const key = this.cachingKeys.getAlbum(artist.name, albumName);
-    let details = this.tryCache(key, async () => {
+    let details = await this.tryCache(key, async () => {
       return await this.meta.getAlbumDetails(album);
     });
-    return details;
+    album.details = details;
+    return album;
   }
 
   async getSongs(album) {
@@ -81,16 +83,16 @@ class Repository {
   }
 
   async tryCache(key, func) {
-    let cacheRes = await this.cache.getAsync(key);
-    logger.debug(cacheRes);
-    if (cacheRes) {
-      logger.info("Using Redis Cache...");
-      return JSON.parse(cacheRes);
-    } else {
-      let res = await func();
-      this.cache.setAsync(key, JSON.stringify(res));
-      return res;
-    }
+    // let cacheRes = await this.cache.getAsync(key);
+    // logger.debug(cacheRes);
+    // if (cacheRes) {
+    //   logger.info("Using Redis Cache...");
+    //   return JSON.parse(cacheRes);
+    // } else {
+    let res = await func();
+    this.cache.setAsync(key, JSON.stringify(res));
+    return res;
+    // }
   }
 
   // buildCacheKey(strings, artist, album = null, song = null) {

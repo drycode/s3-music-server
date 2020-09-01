@@ -21,6 +21,10 @@ describe("Test Helpers", function () {
         normalizeSongName("03 Led Zeppelin - Fool In The Rain.mp3"),
         "Led Zeppelin - Fool In The Rain"
       );
+      assert.equal(
+        normalizeSongName("02 Giant Steps [Alternate Take] 11.mp3"),
+        "Giant Steps [Alternate Take] 11"
+      );
     });
   });
   describe("sleep", () => {

@@ -3,7 +3,7 @@ const logger = require("../lib/logger");
 const discogs = require("../clients/discogs_client");
 
 const songMap = require("../middlewares/normalize.js");
-const { Artist } = require("../models/models.js");
+const { Artist, Song } = require("../models/models.js");
 
 class S3Repository {
   constructor(s3_client, discogs_client) {
@@ -49,11 +49,14 @@ class S3Repository {
 
   async getSongsByAlbum(album) {
     let songs = await this.s3Client.listSongs(album);
+    let res = [];
     for (let i = 0; i < songs.length; i++) {
       const song = songs[i];
       songMap.putSongTarget(song);
+      res.push(new Song(album.artist, album.name, song));
     }
-    return songs;
+
+    return res;
   }
 
   async downloadAudioFile(song, res) {
@@ -64,7 +67,8 @@ class S3Repository {
 
     downloadStream.on("error", (err) => {
       if (err.code === "NoSuchKey") {
-        logger.error(err);
+        logger.error(err.name + `: ${song.name}`);
+        logger.info(songMap);
         setTimeout(() => {
           downloadStream.emit("end");
         }, 20);
