@@ -1,5 +1,5 @@
 const express = require("express");
-const expressOasGenerator = require("express-oas-generator");
+
 const path = require("path");
 const bodyParser = require("body-parser");
 
@@ -16,7 +16,6 @@ const expressLogger = expressPino({ logger });
 const repo = new Repository(s3Repo, discRepo, process.env.USE_REDIS || true);
 
 const app = express();
-expressOasGenerator.init(app, {}); // to overwrite generated specification's values use second argument.
 const defaultCacheTTL = process.env.CACHE_TTL || 300;
 const cacheMiddleware = new ServerCache(defaultCacheTTL)
   .expressCachingMiddleware;
