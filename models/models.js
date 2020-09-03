@@ -4,94 +4,73 @@ const logger = require("../lib/logger");
 const _ = require("lodash");
 class Album {
   constructor(artist, name, songs = null, details = null) {
-    this._name = name;
-    this._artist = artist;
-    this._songs = songs;
-    this._details = details;
-  }
-  get name() {
-    if (!this._name) {
-      throw new Error("Must have a valid name");
-    }
-    return this._name;
+    this.name = name;
+    this.artist = artist;
+    this.songs = songs;
+    this.details = details;
   }
 
-  get artist() {
-    if (!this._artist) {
-      throw new Error("Must have a valid artist associated with an Album");
-    }
-    return this._artist;
-  }
-
-  get songs() {
-    return this._songs;
-  }
-  set songs(songs) {
-    // Validate song updates
-    this._songs = songs;
-    f;
-  }
-
-  get details() {
-    return this._details;
-  }
-
-  set details(details) {
-    const keys = Object.keys(nullAlbum);
-    let temp = _.pick(details, keys);
-    for (let i in keys) {
-      let key = keys[i];
-      if (_.isArray(details[key]) && _.isObject(details[key][0])) {
-        const result = _.map(
-          details[key],
-          _.partialRight(_.pick, Object.keys(nullAlbum[key][0]))
-        );
-        logger.info(result);
-        temp[key] = result;
+  setDetails(details) {
+    if (!details) {
+      this.details = null;
+    } else {
+      const keys = Object.keys(nullAlbum);
+      let temp = _.pick(details, keys);
+      for (let i in keys) {
+        let key = keys[i];
+        if (_.isArray(details[key]) && _.isObject(details[key][0])) {
+          const result = _.map(
+            details[key],
+            _.partialRight(_.pick, Object.keys(nullAlbum[key][0]))
+          );
+          logger.info(result);
+          temp[key] = result;
+        }
       }
+      this.details = temp;
     }
-
-    this._details = temp;
-    // this._details = _.pick(details, Object.keys(nullAlbum));
   }
 }
 
 class Artist {
-  constructor(name, albums = null) {
-    this._name = name;
-    this._albums = albums;
-    this.details = nullArtist;
+  constructor(name, albums = null, details = null) {
+    this.name = name;
+    this.albums = albums;
+    this.details = details;
   }
-  get name() {
-    return this._name;
+  setAlbums(albums) {
+    this.albums = albums;
   }
-  get albums() {
-    return this._albums;
-  }
-  set albums(albums) {
-    // Validate album update
-    this._albums = albums;
+
+  setDetails(details) {
+    if (!details) {
+      this.details = null;
+    } else {
+      const keys = Object.keys(nullArtist);
+      let temp = _.pick(details, keys);
+      for (let i in keys) {
+        let key = keys[i];
+        if (_.isArray(details[key]) && _.isObject(details[key][0])) {
+          const result = _.map(
+            details[key],
+            _.partialRight(_.pick, Object.keys(nullArtist[key][0]))
+          );
+          logger.info(result);
+          temp[key] = result;
+        }
+      }
+
+      this.details = temp;
+    }
   }
 }
 
 class Song {
   constructor(artist, album, name) {
-    this._name = normalizeSongName(name);
-    this._album = album;
-    this._artist = artist;
+    this.name = normalizeSongName(name);
+    this.album = album;
+    this.artist = artist;
     this.details = nullSong;
-  }
-
-  get name() {
-    return this._name;
-  }
-
-  get album() {
-    return this._album;
-  }
-
-  get artist() {
-    return this._artist;
   }
 }
 

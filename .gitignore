@@ -5,3 +5,4 @@ index2.html
 TODO
 *.env
 *.nyc*
+*coverage

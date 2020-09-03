@@ -37,10 +37,9 @@ describe("Test Repository", () => {
       let res = await repo.getArtists();
       assert(typeof res == "object");
 
-      const key = Object.keys(res)[0];
-      const artist = res[key];
+      const artistDetails = res[0].details;
 
-      assert.deepEqual(Object.keys(artist), keys);
+      assert.deepEqual(Object.keys(artistDetails), keys);
     });
   });
   describe("getAlbum", () => {
@@ -52,34 +51,17 @@ describe("Test Repository", () => {
   });
   describe("getAlbums", () => {
     it("Checks albums by valid artist", async () => {
-      const keys = [
-        "BBC Sessions [Disc 2] [Live]",
-        "Coda",
-        "Houses Of The Holy",
-        "In Through The Out Door",
-        "Latter Days_ Best Of Led Zeppelin, Vol.2",
-        "Led Zeppelin I",
-        "Led Zeppelin II",
-        "Led Zeppelin III",
-        "Led Zeppelin IV (Remastered)",
-        "Mothership [Disc 1]",
-        "Mothership [Disc 2]",
-        "Physical Graffiti [Disc 2]",
-        "Presence",
-        "The Best Of Led Zeppelin, Vol. 1",
-        "The Song Remains The Same [Disc 1] [Live]",
-        "The Song Remains The Same [Disc 2] [Live]",
-      ];
       const artist = new Artist("Led Zeppelin");
       const res = await repo.getAlbums(artist);
-
-      assert.deepEqual(Object.keys(res), keys);
+      assert(res.length > 0);
+      assert.equal(res[0].artist, "Led Zeppelin");
+      assert(res[0].details);
     });
-    // it("Checks invalid artist", async () => {
-    //   const artist = new Artist("a;lkasdbg");
-    //   const res = await repo.getAlbums(artist);
-    //   assert.deepEqual(res, {});
-    // });
+    it("Checks invalid artist", async () => {
+      const artist = new Artist("a;lkasdbg");
+      const res = await repo.getAlbums(artist);
+      assert.deepEqual(res, []);
+    });
   });
   describe("getSongsByAlbum", async () => {
     it("Checks valid album", async () => {

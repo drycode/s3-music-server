@@ -12,14 +12,14 @@ class S3Repository {
   }
 
   async getArtists(limit = 10, page = 2) {
-    let response = {};
+    let response = [];
     let data = await this.s3Client.listArtists();
 
     const promises = data
       .slice(limit * page, limit * page + limit)
       .map(async (name) => {
         let artist = new Artist(name);
-        return [name, await this.s3Client.getArtistDetails(artist)];
+        return [artist, await this.s3Client.getArtistDetails(artist)];
       });
 
     const responses = await Promise.all(promises);
@@ -27,11 +27,13 @@ class S3Repository {
     responses.map((data) => {
       // TODO: Clean up
       logger.debug(data[1]);
-      delete data[1].master_id;
-      delete data[1].master_url;
-      delete data[1].uri;
-      delete data[1].user_data;
-      response[data[0]] = data[1];
+      // delete data[1].master_id;
+      // delete data[1].master_url;
+      // delete data[1].uri;
+      // delete data[1].user_data;
+      let artist = data[0];
+      artist.setDetails(data[1]);
+      response.push(artist);
     });
     return response;
   }
