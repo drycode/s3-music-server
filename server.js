@@ -1,4 +1,5 @@
 const express = require("express");
+const expressOasGenerator = require("express-oas-generator");
 const path = require("path");
 const bodyParser = require("body-parser");
 
@@ -12,9 +13,11 @@ const expressPino = require("express-pino-logger");
 const { Artist, Song, Album } = require("./models/models.js");
 const expressLogger = expressPino({ logger });
 
-const repo = new Repository(s3Repo, discRepo, 0);
+const repo = new Repository(s3Repo, discRepo, process.env.USE_REDIS || true);
+
 const app = express();
-const defaultCacheTTL = 0;
+expressOasGenerator.init(app, {}); // to overwrite generated specification's values use second argument.
+const defaultCacheTTL = process.env.CACHE_TTL || 300;
 const cacheMiddleware = new ServerCache(defaultCacheTTL)
   .expressCachingMiddleware;
 

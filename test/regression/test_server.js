@@ -1,6 +1,10 @@
 const axios = require("axios");
 const assert = require("assert");
-const { nullArtist, nullAlbum } = require("../../models/null_responses");
+const {
+  nullArtist,
+  nullAlbum,
+  nullSong,
+} = require("../../models/null_responses");
 const { Album } = require("../../models/models");
 const instance = axios.create({
   baseURL: "http://localhost:5000",
@@ -25,13 +29,15 @@ describe("Test Server Endpoints", () => {
     assert.equal(res.status, 200);
     assert(albums.length > 0);
     assert.equal(oneAlbum.artist, "John Coltrane");
-    assert.deepEqual(oneAlbum.details, nullAlbum);
+    assert.deepEqual(Object.keys(oneAlbum.details), Object.keys(nullAlbum));
   });
   it("/songs", async () => {
     const res = await instance.get(
-      "/artists/John Coltrane/albums/A Love Supreme/songs"
+      "/artists/John Coltrane/albums/A Love Supreme [Verve Reissue]/songs"
     );
     const songs = res.data;
-    assert.equal(songs, "");
+    assert.notEqual(songs.length, 0);
+    assert.equal(songs[0].artist, "John Coltrane");
+    assert.deepEqual(songs[0].details, nullSong);
   });
 });

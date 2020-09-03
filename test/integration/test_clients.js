@@ -45,7 +45,7 @@ describe("Test Clients", () => {
         ]);
       });
       it("Checks NOT exists in cache", async () => {
-        const artist = new Artist("abcdefg");
+        const artist = new Artist("abcdef234lkjsd;lk;ag");
         call = async () => await s3Client.getArtistDetails(artist);
         assert.rejects(call);
       });

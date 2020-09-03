@@ -66,11 +66,32 @@ class Artist {
 }
 
 class Song {
-  constructor(artist, album, name) {
+  constructor(artist, album, name, details = null) {
     this.name = normalizeSongName(name);
     this.album = album;
     this.artist = artist;
-    this.details = nullSong;
+    this.details = details;
+  }
+  setDetails(details) {
+    if (!details) {
+      this.details = null;
+    } else {
+      const keys = Object.keys(nullArtist);
+      let temp = _.pick(details, keys);
+      for (let i in keys) {
+        let key = keys[i];
+        if (_.isArray(details[key]) && _.isObject(details[key][0])) {
+          const result = _.map(
+            details[key],
+            _.partialRight(_.pick, Object.keys(nullArtist[key][0]))
+          );
+          logger.info(result);
+          temp[key] = result;
+        }
+      }
+
+      this.details = temp;
+    }
   }
 }
 

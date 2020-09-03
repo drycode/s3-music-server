@@ -4,7 +4,7 @@
   "description": "",
   "main": "server.js",
   "scripts": {
-    "test": "nyc mocha --recursive --unhandled-rejections=strict --timeout=3000",
+    "test": "mocha --recursive --unhandled-rejections=strict --timeout=3000",
     "start": "LOG_LEVEL=debug nodemon server.js | ./node_modules/.bin/pino-pretty"
   },
   "author": "",
@@ -15,8 +15,10 @@
     "body-parser": "^1.19.0",
     "dotenv": "^8.2.0",
     "express": "^4.13.3",
+    "express-oas-generator": "^1.0.26",
     "express-pino-logger": "^5.0.0",
     "lodash": "^4.17.20",
+    "mocha": "^8.1.3",
     "nodemon": "^2.0.2",
     "nyc": "^15.1.0",
     "pino": "^6.3.2",

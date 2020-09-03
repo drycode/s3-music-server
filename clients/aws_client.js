@@ -120,7 +120,6 @@ class S3Client {
    */
   getArtistDetails(artist, cacheBucket = "discogs-api-cache") {
     return new Promise((resolve, reject) => {
-      // try {
       let key = S3Client.buildArtistDetailsPath(artist);
       this.client.getObject({ Bucket: cacheBucket, Key: key }, (err, res) => {
         if (err) {
@@ -179,7 +178,6 @@ class S3Client {
     try {
       songName = songMap.getSongTarget(song.name);
     } catch {
-      // songMap.putSongTarget(song.name);
       songName = songMap.getSongTarget(song.name);
     }
     return `${song.artist}/${song.album}/${songName}`;

@@ -4,6 +4,7 @@ const discogs = require("../clients/discogs_client");
 
 const songMap = require("../middlewares/normalize.js");
 const { Artist, Song } = require("../models/models.js");
+const { nullSong } = require("../models/null_responses.js");
 
 class S3Repository {
   constructor(s3_client, discogs_client) {
@@ -25,12 +26,7 @@ class S3Repository {
     const responses = await Promise.all(promises);
 
     responses.map((data) => {
-      // TODO: Clean up
       logger.debug(data[1]);
-      // delete data[1].master_id;
-      // delete data[1].master_url;
-      // delete data[1].uri;
-      // delete data[1].user_data;
       let artist = data[0];
       artist.setDetails(data[1]);
       response.push(artist);
@@ -38,24 +34,38 @@ class S3Repository {
     return response;
   }
 
-  /**
-   * TODO: Currently very slow when returning several albums by a single artist because of the discogs calls
-   * Solution 1: Cache in S3 and call the S3 cache and Discogs API's concurrently, take whatever comes
-   *   back with a valid response first
-   * Solution 2: Redis Cache with discogs failover
-   */
-  async getAlbumsByArtist(artist) {
+  async getAlbumNames(artist) {
     let albumNames = await this.s3Client.listAlbums(artist);
     return albumNames;
   }
 
   async getSongsByAlbum(album) {
     let songs = await this.s3Client.listSongs(album);
+    const matchAlbumDetailsToSong = (songName) => {
+      const tracklist = album.details?.tracklist;
+      if (tracklist) {
+        for (let i in tracklist) {
+          if (tracklist[i].title == songName) {
+            return tracklist[i];
+          }
+        }
+      }
+      return nullSong;
+    };
     let res = [];
     for (let i = 0; i < songs.length; i++) {
-      const song = songs[i];
-      songMap.putSongTarget(song);
-      res.push(new Song(album.artist, album.name, song));
+      const songName = songs[i];
+      songMap.putSongTarget(songName);
+      let song = new Song(album.artist, album.name, songName);
+      // Add switch case. If songs.length == album.details.tracklist.length, map directly, otherwise use name lookup
+      switch (songs.length == album.details?.tracklist.length) {
+        case true:
+          song.details = album.details.tracklist[i];
+        case false:
+          song.details = matchAlbumDetailsToSong(song.name);
+      }
+
+      res.push(song);
     }
 
     return res;

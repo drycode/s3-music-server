@@ -11,9 +11,6 @@ class RedisClient {
       host: config.REDIS_HOST,
       password: config.REDIS_PASSWORD,
     });
-    // this.client.on("error", function (error) {
-    //   console.error(error);
-    // });
   }
   healthy() {
     this.client.set("key", "value");

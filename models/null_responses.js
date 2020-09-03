@@ -33,14 +33,14 @@ const nullAlbum = {
   genres: [""],
   styles: [""],
   year: null,
-  // tracklist: [
-  //   {
-  //     position: "",
-  //     type_: "",
-  //     title: "",
-  //     duration: "",
-  //   },
-  // ],
+  tracklist: [
+    {
+      position: "",
+      type_: "",
+      title: "",
+      duration: "",
+    },
+  ],
   artists: [
     {
       name: "",
@@ -65,4 +65,10 @@ const nullAlbum = {
   //   },
   // ],
 };
-module.exports = { nullArtist, nullAlbum };
+const nullSong = {
+  position: "",
+  type_: "",
+  title: "",
+  duration: "",
+};
+module.exports = { nullArtist, nullAlbum, nullSong };

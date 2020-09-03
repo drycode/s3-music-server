@@ -5,8 +5,9 @@ const logger = require("../../lib/logger");
 const { Artist, Album, Song } = require("../../models/models");
 const s3Repo = require("../../repository/s3Repository");
 const discRepo = require("../../repository/discogsRepository");
+const { nullAlbum } = require("../../models/null_responses");
 
-const repo = new Repository(s3Repo, discRepo);
+const repo = new Repository(s3Repo, discRepo, false);
 
 describe("Test Repository", () => {
   beforeEach(() => {
@@ -65,9 +66,22 @@ describe("Test Repository", () => {
   });
   describe("getSongsByAlbum", async () => {
     it("Checks valid album", async () => {
-      const album = new Album("Led Zeppelin", "Led Zeppelin I");
+      let album = new Album("Led Zeppelin", "Led Zeppelin I");
+      const x = {
+        ...nullAlbum,
+        tracklist: [
+          {
+            position: "1",
+            type_: "Headbanger",
+            title: "Good Times Bad Times",
+            duration: "1:00",
+          },
+        ],
+      };
+      album.details = x;
       const res = await repo.getSongs(album);
-      assert(Object.keys(res).length > 0);
+      assert.notEqual(Object.keys(res).length, 0);
+      assert.equal(res[0].details.title, x.tracklist[0].title);
     });
     it("Checks invalid album", async () => {
       const album = new Album(";lkasd", "asdlkjg");

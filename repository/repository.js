@@ -5,11 +5,10 @@ const { promisify } = require("util");
 const logger = require("../lib/logger.js");
 
 class Repository {
-  constructor(dataClient, metaDataClient, TTL = 100) {
+  constructor(dataClient, metaDataClient, useCache = true) {
     this.data = dataClient;
     this.meta = metaDataClient;
-    this.TTL = TTL * 1000;
-
+    this.useCache = useCache;
     const client = redis.createClient({
       port: config.REDIS_PORT,
       host: config.REDIS_HOST,
@@ -41,7 +40,7 @@ class Repository {
 
     let key = this.cachingKeys.getAlbums(artist.name);
     let albumNames = await this.tryCache(key, async () => {
-      return await this.data.getAlbumsByArtist(artist);
+      return await this.data.getAlbumNames(artist);
     });
 
     let res = [];
@@ -80,16 +79,21 @@ class Repository {
   }
 
   async tryCache(key, func) {
-    // let cacheRes = await this.cache.getAsync(key);
-    // logger.debug(cacheRes);
-    // if (cacheRes) {
-    //   logger.info("Using Redis Cache...");
-    //   return JSON.parse(cacheRes);
-    // } else {
-    let res = await func();
-    this.cache.setAsync(key, JSON.stringify(res));
-    return res;
-    // }
+    if (this.useCache) {
+      let cacheRes;
+      cacheRes = await this.cache.getAsync(key);
+      logger.debug(cacheRes);
+      if (cacheRes) {
+        logger.info("Using Redis Cache...");
+        return JSON.parse(cacheRes);
+      } else {
+        let res = await func();
+        this.cache.setAsync(key, JSON.stringify(res));
+        return res;
+      }
+    } else {
+      return await func();
+    }
   }
 
   buildCacheKey(strings, ...keys) {
