@@ -37,8 +37,8 @@ class ServerCache {
           this.put(key, body);
           res.sendResponse(body);
         };
-        next();
       }
+      next();
     };
   }
 }
