@@ -106,7 +106,8 @@ describe("Test Clients", () => {
     });
     describe("playMusic", () => {
       it("Checks existing song returns buffer", async () => {
-        let bufferStream = s3Client.playMusic(
+        let bufferStream = await s3Client.playMusic(
+          new Album("Dick Oatts", "Standard Issue"),
           new Song("Dick Oatts", "Standard Issue", "All The Things You Are")
         );
         assert(isReadableStream(bufferStream));
@@ -118,14 +119,14 @@ describe("Test Clients", () => {
     });
   });
   describe("Test Discogs Client", () => {
-    describe("getDiscogsToken", () => {
-      it("Checks that the discogs token get's fetched properly", () => {
-        assert(
-          typeof discogs.getDiscogsToken(config.discogsAccessTokenPath),
-          String
-        );
-      });
-    });
+    // describe("getDiscogsToken", () => {
+    //   it("Checks that the discogs token get's fetched properly", () => {
+    //     assert(
+    //       typeof discogs.getDiscogsToken(config.discogsAccessTokenPath),
+    //       String
+    //     );
+    //   });
+    // });
     describe("getAlbumId", () => {
       let album = new Album("Led Zeppelin", "In Through the Out Door");
       it("Checks existing albumId from Discogs API", async () => {

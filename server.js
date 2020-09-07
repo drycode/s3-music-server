@@ -24,7 +24,7 @@ app.get("", (req, res) => {
   res.sendFile(path.join(__dirname + "/index.html"));
 });
 
-app.get("/test", (req, res) => {
+app.get("/healthy", (req, res) => {
   res.send({ express: "Hello from express" });
 });
 

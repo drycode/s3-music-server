@@ -112,10 +112,12 @@ class S3Client {
    * Returns a read stream object for an audio file.
    * @param {Object} song The song object as defined in models/song.js
    */
-  playMusic(song) {
-    const songTarget = S3Client.buildSongPath(song);
+  async playMusic(album, song) {
+    const songTarget = await this.buildSongPath(album, song);
+
     let params = { Bucket: config.bucket, Key: songTarget };
-    return this.client.getObject(params).createReadStream();
+    let songData = this.client.getObject(params).createReadStream();
+    return songData;
   }
 
   /**
@@ -178,14 +180,16 @@ class S3Client {
     return `${album.artist}/${album.name}/`;
   }
 
-  static buildSongPath(song) {
-    let songName;
+  async buildSongPath(album, song) {
+    let songTarget;
+    logger.info(songMap);
     try {
-      songName = songMap.getSongTarget(song.name);
+      songTarget = songMap.getSongTarget(song.name);
     } catch {
-      songName = songMap.getSongTarget(song.name);
+      await this.listSongs(album);
+      songTarget = songMap.getSongTarget(song.name);
     }
-    return `${song.artist}/${song.album}/${songName}`;
+    return `${song.artist}/${song.album}/${songTarget}`;
   }
 }
 

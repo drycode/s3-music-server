@@ -71,8 +71,8 @@ class S3Repository {
     return res;
   }
 
-  async downloadAudioFile(song, res) {
-    let downloadStream = this.s3Client.playMusic(song);
+  async downloadAudioFile(album, song, res) {
+    let downloadStream = await this.s3Client.playMusic(album, song);
     logger.info("Request for song initiated");
     res.set("content-type", "audio/mp3");
     res.set("accept-ranges", "bytes");
@@ -80,7 +80,6 @@ class S3Repository {
     downloadStream.on("error", (err) => {
       if (err.code === "NoSuchKey") {
         logger.error(err.name + `: ${song.name}`);
-        logger.info(songMap);
         setTimeout(() => {
           downloadStream.emit("end");
         }, 20);

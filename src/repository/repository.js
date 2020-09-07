@@ -71,7 +71,8 @@ class Repository {
   }
 
   async getSong(song, res) {
-    return this.data.downloadAudioFile(song, res);
+    const album = new Album(song.artist, song.album);
+    this.data.downloadAudioFile(album, song, res);
   }
 
   async tryCache(key, func) {
@@ -88,7 +89,6 @@ class Repository {
         return res;
       }
     } else {
-      console.log("############################");
       return await func();
     }
   }
