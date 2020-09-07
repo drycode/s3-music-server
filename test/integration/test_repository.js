@@ -1,11 +1,11 @@
 const sinon = require("sinon");
-const Repository = require("../../repository/repository");
+const Repository = require("../../src/repository/repository");
 const assert = require("assert");
-const logger = require("../../lib/logger");
-const { Artist, Album, Song } = require("../../models/models");
-const s3Repo = require("../../repository/s3Repository");
-const discRepo = require("../../repository/discogsRepository");
-const { nullAlbum } = require("../../models/null_responses");
+const logger = require("../../src/lib/logger");
+const { Artist, Album, Song } = require("../../src/models/models");
+const s3Repo = require("../../src/repository/s3Repository");
+const discRepo = require("../../src/repository/discogsRepository");
+const { nullAlbum } = require("../../src/models/null_responses");
 
 const repo = new Repository(s3Repo, discRepo, false);
 

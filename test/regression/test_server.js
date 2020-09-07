@@ -4,8 +4,8 @@ const {
   nullArtist,
   nullAlbum,
   nullSong,
-} = require("../../models/null_responses");
-const { Album } = require("../../models/models");
+} = require("../../src/models/null_responses");
+
 const instance = axios.create({
   baseURL: "http://localhost:5000",
 });

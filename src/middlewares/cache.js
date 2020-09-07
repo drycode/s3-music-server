@@ -28,9 +28,7 @@ class ServerCache {
     return (req, res, next) => {
       let key = "__express__" + req.originalUrl || req.url;
       let cacheContent = this.get(key);
-      if (cacheContent) {
-        res.send(cacheContent);
-      } else {
+      if (!cacheContent) {
         res.sendResponse = res.send;
 
         res.send = (body) => {

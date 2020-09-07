@@ -1,0 +1,15 @@
+version: "2.0"
+services:
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    links:
+      - redis
+    environment:
+      - REDIS_HOST=redis
+  redis:
+    image: redis
+    container_name: cache
+    expose:
+      - 6379

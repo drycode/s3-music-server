@@ -1,9 +1,9 @@
-const ServerCache = require("../../middlewares/cache");
+const ServerCache = require("../../src/middlewares/cache");
 const assert = require("assert");
-const logger = require("../../lib/logger");
+const logger = require("../../src/lib/logger");
 const sinon = require("sinon");
-const songMap = require("../../middlewares/normalize");
-const { normalizeSongName } = require("../../helpers/utils");
+const songMap = require("../../src/middlewares/normalize");
+const { normalizeSongName } = require("../../src/helpers/utils");
 
 const serverCache = new ServerCache();
 

@@ -9,11 +9,7 @@ class Repository {
     this.data = dataClient;
     this.meta = metaDataClient;
     this.useCache = useCache;
-    const client = redis.createClient({
-      port: config.REDIS_PORT,
-      host: config.REDIS_HOST,
-      password: config.REDIS_PASSWORD,
-    });
+    const client = redis.createClient(config.redis);
     const getAsync = promisify(client.get).bind(client);
     const setAsync = promisify(client.set).bind(client);
     this.cache = { client, getAsync, setAsync };
@@ -92,6 +88,7 @@ class Repository {
         return res;
       }
     } else {
+      console.log("############################");
       return await func();
     }
   }

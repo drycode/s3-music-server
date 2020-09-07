@@ -1,22 +1,19 @@
 const express = require("express");
-const expressOasGenerator = require("express-oas-generator");
-
 const path = require("path");
 
-const logger = require("./lib/logger.js");
-const Repository = require("./repository/repository.js");
-const s3Repo = require("./repository/s3Repository");
-const discRepo = require("./repository/discogsRepository");
-const ServerCache = require("./middlewares/cache.js");
+const logger = require("./src/lib/logger.js");
+const Repository = require("./src/repository/repository.js");
+const s3Repo = require("./src/repository/s3Repository");
+const discRepo = require("./src/repository/discogsRepository");
+const ServerCache = require("./src/middlewares/cache.js");
 
 const expressPino = require("express-pino-logger");
-const { Artist, Song, Album } = require("./models/models.js");
+const { Artist, Song, Album } = require("./src/models/models.js");
 
 const defaultCacheTTL = process.env.CACHE_TTL || 300;
 
 const expressLogger = expressPino({ logger });
-const repo = new Repository(s3Repo, discRepo, process.env.USE_REDIS || true);
-
+const repo = new Repository(s3Repo, discRepo, process.env.USE_REDIS);
 const app = express();
 
 const cacheMiddleware = new ServerCache(defaultCacheTTL)

@@ -3,13 +3,18 @@ const config = require("../config");
 const logger = require("../lib/logger");
 const songMap = require("../middlewares/normalize");
 const { normalizeArtistName } = require("../helpers/utils");
-const { Album } = require("../models/models");
 
 class S3Client {
   constructor(cacheTTL = 60) {
-    AWS.config.credentials = new AWS.SharedIniFileCredentials({
-      profile: config.profile,
-    });
+    // AWS.config.getCredentials((err) => {
+    //   if (err) {
+    //     AWS.config.credentials = new AWS.SharedIniFileCredentials({
+    //       accessKeyId:
+    //       secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    //     });
+    //   }
+    // });
+
     this.client = new AWS.S3();
     this.artistNames = [];
     this.albumNames = [];

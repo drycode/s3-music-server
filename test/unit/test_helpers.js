@@ -1,6 +1,6 @@
 const assert = require("assert");
 
-const { normalizeSongName, sleep } = require("../../helpers/utils");
+const { normalizeSongName, sleep } = require("../../src/helpers/utils");
 
 describe("Test Helpers", function () {
   describe("normalizeSongName", () => {

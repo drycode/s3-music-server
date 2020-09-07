@@ -7,9 +7,7 @@ const logger = require("../lib/logger");
 class RedisClient {
   constructor() {
     this.client = redis.createClient({
-      port: config.REDIS_PORT,
-      host: config.REDIS_HOST,
-      password: config.REDIS_PASSWORD,
+      ...config.redis,
     });
   }
   healthy() {

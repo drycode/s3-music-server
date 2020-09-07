@@ -1,23 +1,14 @@
-const fs = require("fs");
 const config = require("../config");
 const axios = require("axios");
 const logger = require("../lib/logger");
 
 class DiscogsClient {
-  constructor(accessTokenPath = config.discogsAccessTokenPath) {
+  constructor() {
     this.axios = axios;
-    this.accessKey = this.getDiscogsToken(accessTokenPath);
+    this.accessKey = config.discogsAccessToken;
     this.axios.defaults.headers.common[
       "Authorization"
     ] = `Discogs token=${this.accessKey}`;
-  }
-
-  getDiscogsToken(accessTokenPath) {
-    const accessKey = fs
-      .readFileSync(accessTokenPath, "utf-8")
-      .split(" = ")[1]
-      .trim();
-    return accessKey;
   }
 
   /**
