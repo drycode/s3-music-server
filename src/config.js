@@ -12,7 +12,7 @@ function getDiscogsToken(accessTokenPath) {
 }
 
 const CONFIG = {
-  bucket: "daniels-music",
+  bucket: process.env.S3_BUCKET,
   profile: process.env.AWS_PROFILE_NAME,
   discogsAccessToken:
     process.env.DISCOGS_TOKEN ||

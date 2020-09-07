@@ -57,30 +57,62 @@ _____________________________
 - The Discogs API throttles access per user to 60 API calls per minute. Therefore, further over-eager loading strategies might need to be implemented to anticipate users' behaviors to reduce the load on the Discogs API
 - The in-memory cache is both implemented as an Elasticache (Redis) store, and as a simple express middleware. The redundent express middleware cache assists in development in situations where a Redis cache is not available.
 
-## Helpers
-
-_code and functionality to be shared by different parts of the project_
-
 ## Middlewares
 
-_Express middlewares which process the incoming requests before handling them down to the routes_
+_Express middlewares which process the incoming requests before handing them down to the routes_
 
-- Caching Middleware being used to create an in memory cache of each request, stored by request
-
-## Views
-
-_provides templates which are rendered and served by your routes_
+- Caching Middleware being used to create an in memory cache of each request
+- A songMap is being built to keep track of references between the presentation Song Name and the Song Path, or the denormalized name and extension of the file in S3.
 
 ## Development
 
+- You'll first need to [register with the Discogs API](https://www.discogs.com/developers/#page:authentication) and retrieve an access token.
+- Also make sure that you have an S3 bucket setup with music stored by keys that follow this form: `artist/album/song.ext`
+
+_Running with docker (PREFERRED)_
+
 ```sh
-~ npm start
+➜ git clone https://github.com/drypycode/s3-music-server.git
+➜ touch s3-music-server/.env.docker
+➜ docker-compose up
+```
+
+`.env.docker`
+
+```sh
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+DISCOGS_TOKEN=
+CACHE_TTL=
+USE_REDIS=
+```
+
+_Running without docker_
+
+```sh
+➜ git clone https://github.com/drypycode/s3-music-server.git
+➜ touch s3-music-server/.env
+➜ npm start
+```
+
+`.env`
+
+```sh
+AWS_PROFILE_NAME=
+DISCOGS_ACCESS_TOKEN_PATH=
+DISCOGS_TOKEN=
+CACHE_TTL=
+USE_REDIS=
 ```
 
 ## Testing
 
-```bash
-npm test
+_The default `npm test` command is all encompassing of regression, integration, and unit. If you would like to run one and not the others, use `mocha test/<type>`_
+
+Be sure to start the development server before running regression tests.
+
+```sh
+➜ npm test
 ```
 
 [open-url]: https://img.shields.io/github/issues-raw/danyoungmusic93/S3PlayMusic.svg
