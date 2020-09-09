@@ -20,6 +20,10 @@ class PlayQueue {
     return this._size;
   }
 
+  isEmpty() {
+    return this._size > 0;
+  }
+
   enqueue(song) {
     this._size += 1;
     const node = new Node(song);

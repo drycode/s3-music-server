@@ -52,15 +52,15 @@ describe("Test Repository", () => {
   });
   describe("getAlbums", () => {
     it("Checks albums by valid artist", async () => {
-      const artist = new Artist("Led Zeppelin");
-      const res = await repo.getAlbums(artist);
+      const artistName = "Led Zeppelin";
+      const res = await repo.getAlbums(artistName);
       assert(res.length > 0);
       assert.equal(res[0].artist, "Led Zeppelin");
       assert(res[0].details);
     });
     it("Checks invalid artist", async () => {
-      const artist = new Artist("a;lkasdbg");
-      const res = await repo.getAlbums(artist);
+      const artistName = "a;lkasdbg";
+      const res = await repo.getAlbums(artistName);
       assert.deepEqual(res, []);
     });
   });
@@ -93,17 +93,17 @@ describe("Test Repository", () => {
     it("Checks download valid song", async () => {
       const album = new Album("Led Zeppelin", "In Through The Out Door");
       await repo.getSongs(album);
-      const song = new Song(
-        "Led Zeppelin",
-        "In Through The Out Door",
-        "Led Zeppelin - Fool In The Rain"
-      );
-      const res = repo.getSong(song, {
+      const params = {
+        artist: "Led Zeppelin",
+        album: "In Through The Out Door",
+        song: "Led Zeppelin - Fool In The Rain",
+      };
+      const res = repo.getSong(params, {
         set: () => {},
         write: () => {},
         end: () => {},
       });
-      assert(typeof res == "object");
+      assert(typeof res === "object");
     });
   });
   afterEach(() => {

@@ -1,4 +1,5 @@
-const { Album } = require("../models/models.js");
+const { Album, Artist, Song } = require("../models/models.js");
+const PlayQueue = require("../models/playqueue");
 const redis = require("redis");
 const config = require("../config");
 const { promisify } = require("util");
@@ -13,7 +14,7 @@ class Repository {
     const getAsync = promisify(client.get).bind(client);
     const setAsync = promisify(client.set).bind(client);
     this.cache = { client, getAsync, setAsync };
-
+    this.playQueue = new PlayQueue();
     this.cachingKeys = {
       getArtists: this.buildCacheKey`artists:limit${0}page${1}`,
       getAlbums: this.buildCacheKey`artist:${0}:albums`,
@@ -22,6 +23,9 @@ class Repository {
     };
   }
 
+  get activePlayQueue() {
+    return !this.playQueue.isEmpty();
+  }
   async getArtists(limit = 10, page = 2) {
     const key = this.cachingKeys.getArtists(limit, page);
     return this.tryCache(key, async () => {
@@ -29,12 +33,13 @@ class Repository {
     });
   }
 
-  async getAlbums(artist) {
+  async getAlbums(artistName) {
+    const artist = new Artist(artistName);
     const resolvePromises = async (promises) => {
       return Promise.all(promises);
     };
 
-    let key = this.cachingKeys.getAlbums(artist.name);
+    let key = this.cachingKeys.getAlbums(artistName);
     let albumNames = await this.tryCache(key, async () => {
       return await this.data.getAlbumNames(artist);
     });
@@ -70,9 +75,27 @@ class Repository {
     return songs;
   }
 
-  async getSong(song, res) {
+  async getSong(params, res) {
+    const song = new Song(params.artist, params.album, params.song);
     const album = new Album(song.artist, song.album);
     this.data.downloadAudioFile(album, song, res);
+  }
+
+  dequeueFromPlayQueue() {
+    return this.playQueue.dequeue();
+  }
+
+  addToQueue(params) {
+    const song = new Song(params.artist, params.album, params.song);
+    this.playQueue.enqueue(song);
+  }
+
+  moveInQueue(params) {
+    this.playQueue.move(params.oldIndex, params.newIndex);
+  }
+
+  removeFromQueueAtIndex(index) {
+    this.playQueue.remove(index);
   }
 
   async tryCache(key, func) {

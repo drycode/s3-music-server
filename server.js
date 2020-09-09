@@ -44,8 +44,7 @@ app.get(
   "/artists/:artist/albums",
   cacheMiddleware(defaultCacheTTL),
   async (req, res) => {
-    const artist = new Artist(req.params.artist);
-    response = await repo.getAlbums(artist);
+    response = await repo.getAlbums(req.params.artist);
     res.send(response);
   }
 );
@@ -54,15 +53,32 @@ app.get(
   "/artists/:artist/albums/:album/songs",
   cacheMiddleware(defaultCacheTTL),
   async (req, res) => {
-    const album = new Album(req.params.artist, req.params.album);
-    response = await repo.getSongs(album);
+    response = await repo.getSongs(req.params.artist, req.params.album);
     res.send(response);
   }
 );
 
 app.get("/artists/:artist/albums/:album/songs/:song/play", (req, res) => {
-  const song = new Song(req.params.artist, req.params.album, req.params.song);
-  repo.getSong(song, res);
+  repo.getSong(req.params, res);
+});
+
+app.get("/playQueue", (req, res) => {
+  if (repo.activePlayQueue) {
+    const song = repo.dequeueFromPlayQueue();
+    repo.getSong({ ...song });
+  }
+});
+
+app.post("/playQueue", (req, res) => {
+  repo.addToQueue(req.body);
+});
+
+app.patch("/playQueue", (req, res) => {
+  repo.moveInQueue(req.body);
+});
+
+app.delete("/playQueue", (req, res) => {
+  repo.removeFromQueueAtIndex(req.body.index);
 });
 
 app.listen(5000, function () {
