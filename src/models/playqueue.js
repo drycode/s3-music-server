@@ -7,9 +7,13 @@ class Node {
 
 class PlayQueue {
   constructor() {
-    this.head = new Node();
-    this.tail = this.head;
-    this._size = 0;
+    if (!PlayQueue._instance) {
+      PlayQueue._instance = this;
+      this.head = new Node();
+      this.tail = this.head;
+      this._size = 0;
+    }
+    return PlayQueue._instance;
   }
 
   get size() {

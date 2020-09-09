@@ -4,6 +4,7 @@ const PlayQueue = require("../../src/models/playqueue");
 const { first } = require("lodash");
 
 const buildQueue = () => {
+  PlayQueue._instance = undefined;
   let queue = new PlayQueue();
   for (let i = 0; i < 5; i++) {
     queue.enqueue(
