@@ -6,38 +6,50 @@ class Node {
 }
 
 class PlayQueue {
-  head = new Node();
-  tail = head;
+  constructor() {
+    this.head = new Node();
+    this.tail = this.head;
+    this._size = 0;
+  }
 
-  enqueue(payload) {
-    const node = new Node(payload);
+  get size() {
+    return this._size;
+  }
+
+  enqueue(song) {
+    this._size += 1;
+    const node = new Node(song);
     this.tail.next = node;
     this.tail = node;
   }
 
   dequeue() {
+    this._size -= 1;
     let node = this.head.next;
     this.head.next = node.next;
-    return node;
+    return node.payload;
   }
 
   remove(index) {
+    this._size -= 1;
     let prev = this.head;
-    let node;
-    for (let i = 0; i <= index; i++) {
-      node = prev.next;
+    let node = prev.next;
+    for (let i = 1; i <= index; i++) {
+      node = node.next;
+      prev = prev.next;
     }
     prev.next = node.next;
-    return node;
+    return node.payload;
   }
 
   move(oldIndex, newIndex) {
-    let node = this.remove(oldIndex);
-    this.#insert(node, newIndex);
+    let song = this.remove(oldIndex);
+    this.#insert(song, newIndex);
   }
 
-  #insert(payload, index) {
-    let node = new Node(payload);
+  #insert(song, index) {
+    this._size += 1;
+    let node = new Node(song);
     let prev = this.head;
     let next = prev.next;
     for (let i = 0; i < index; i++) {
