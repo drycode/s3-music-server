@@ -50,7 +50,7 @@ describe("Test Server Endpoints", () => {
     // res = instance.get({});
   });
   it("GET /playQueue", async () => {
-    res = await instance.get("/playQueue");
+    let res = await instance.get("/playQueue");
     assert.equal(res.status, 200);
     assert.equal(res.data.artist, "Led Zeppelin");
     for (let i = 0; i <= 5; i++) {
@@ -59,13 +59,24 @@ describe("Test Server Endpoints", () => {
     assert.equal(res.status, 204);
   });
 
-  // app.patch("/playQueue", (req, res) => {
-  //   repo.moveInQueue(req.body);
-  //   res.status(204).send();
-  // });
+  it("PATCH /playQueue", async () => {
+    let res;
+    for (let i = 0; i <= 4; i++) {
+      res = await instance.post("/playQueue", {
+        artist: "test",
+        album: "test",
+        song: `Song ${i}`,
+      });
+      assert.equal(res.status, 201);
+    }
+    res = await instance.patch("/playQueue", { oldIndex: 1, newIndex: 4 });
+    assert.equal(res.status, 204);
+    res = await instance.get("/playQueue");
+  });
 
-  // app.delete("/playQueue", (req, res) => {
-  //   repo.removeFromQueueAtIndex(req.body.index);
-  //   res.status(204).send();
-  // });
+  it("DELETE /playQueue", async () => {
+    let res;
+    res = await instance.delete("/playQueue", { index: 0 });
+    assert.equal(res.status, 204);
+  });
 });

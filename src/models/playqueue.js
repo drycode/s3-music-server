@@ -57,7 +57,11 @@ class PlayQueue {
 
   move(oldIndex, newIndex) {
     let song = this.remove(oldIndex);
-    this.#insert(song, newIndex);
+    if (oldIndex >= newIndex) {
+      this.#insert(song, newIndex);
+    } else {
+      this.#insert(song, newIndex - 1);
+    }
   }
 
   #insert(song, index) {
