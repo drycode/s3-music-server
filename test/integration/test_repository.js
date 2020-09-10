@@ -66,22 +66,10 @@ describe("Test Repository", () => {
   });
   describe("getSongsByAlbum", async () => {
     it("Checks valid album", async () => {
-      let album = new Album("Led Zeppelin", "Led Zeppelin I");
-      const x = {
-        ...nullAlbum,
-        tracklist: [
-          {
-            position: "1",
-            type_: "Headbanger",
-            title: "Good Times Bad Times",
-            duration: "1:00",
-          },
-        ],
-      };
-      album.details = x;
-      const res = await repo.getSongs(album);
+      let album = new Album("Led Zeppelin", "In Through The Out Door");
+      const res = await repo.getSongs(album.artist, album.name);
       assert.notEqual(Object.keys(res).length, 0);
-      assert.equal(res[0].details.title, x.tracklist[0].title);
+      assert.equal(Object.keys(res[0].details).length, 4);
     });
     it("Checks invalid album", async () => {
       const album = new Album(";lkasd", "asdlkjg");

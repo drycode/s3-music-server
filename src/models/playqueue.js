@@ -1,3 +1,5 @@
+const logger = require("../lib/logger");
+
 class Node {
   constructor(payload = null, next = null) {
     this.payload = payload;
@@ -21,12 +23,15 @@ class PlayQueue {
   }
 
   isEmpty() {
-    return this._size > 0;
+    return this._size <= 0;
   }
 
   enqueue(song) {
     this._size += 1;
     const node = new Node(song);
+    if (!this.head.next) {
+      this.head.next = node;
+    }
     this.tail.next = node;
     this.tail = node;
   }

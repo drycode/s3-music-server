@@ -1,6 +1,6 @@
 const express = require("express");
 const path = require("path");
-
+const bodyParser = require("body-parser");
 const logger = require("./src/lib/logger.js");
 const Repository = require("./src/repository/repository.js");
 const s3Repo = require("./src/repository/s3Repository");
@@ -19,7 +19,7 @@ const app = express();
 const cacheMiddleware = new ServerCache(defaultCacheTTL)
   .expressCachingMiddleware;
 
-app.use(expressLogger);
+app.use(expressLogger, express.json());
 app.get("", (req, res) => {
   res.sendFile(path.join(__dirname + "/index.html"));
 });
@@ -63,22 +63,32 @@ app.get("/artists/:artist/albums/:album/songs/:song/play", (req, res) => {
 });
 
 app.get("/playQueue", (req, res) => {
+  logger.debug(repo.activePlayQueue);
   if (repo.activePlayQueue) {
     const song = repo.dequeueFromPlayQueue();
-    repo.getSong({ ...song });
+    res.status(200).send(song);
+  } else {
+    res.status(204).send("The Play Queue is empty.");
   }
 });
 
 app.post("/playQueue", (req, res) => {
-  repo.addToQueue(req.body);
+  try {
+    repo.addToQueue(req.body);
+    res.status(201).send("Successfully added song to Play Queue. ");
+  } catch (err) {
+    res.status(422).send(err);
+  }
 });
 
 app.patch("/playQueue", (req, res) => {
   repo.moveInQueue(req.body);
+  res.status(204).send();
 });
 
 app.delete("/playQueue", (req, res) => {
   repo.removeFromQueueAtIndex(req.body.index);
+  res.status(204).send();
 });
 
 app.listen(5000, function () {

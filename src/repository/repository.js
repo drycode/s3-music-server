@@ -24,8 +24,9 @@ class Repository {
   }
 
   get activePlayQueue() {
-    return !this.playQueue.isEmpty();
+    return this.playQueue.isEmpty() == false;
   }
+
   async getArtists(limit = 10, page = 2) {
     const key = this.cachingKeys.getArtists(limit, page);
     return this.tryCache(key, async () => {
@@ -67,9 +68,10 @@ class Repository {
     return album;
   }
 
-  async getSongs(album) {
-    const key = this.cachingKeys.getSongs(album.artist, album.name);
-    const songs = this.tryCache(key, async () => {
+  async getSongs(artistName, albumName) {
+    const album = new Album(artistName, albumName);
+    const key = this.cachingKeys.getSongs(artistName, albumName);
+    const songs = await this.tryCache(key, async () => {
       return await this.data.getSongsByAlbum(album);
     });
     return songs;
@@ -82,11 +84,24 @@ class Repository {
   }
 
   dequeueFromPlayQueue() {
+    logger.debug(this.playQueue);
     return this.playQueue.dequeue();
   }
 
-  addToQueue(params) {
-    const song = new Song(params.artist, params.album, params.song);
+  async addToQueue(params) {
+    logger.debug(params);
+    const cacheRes = await this.cache.getAsync(
+      this.cachingKeys.getSongs(params.artist, params.album)
+    );
+    let details = null;
+    if (cacheRes) {
+      for (let song in cacheRes) {
+        if (cacheRes[song].name == params.song.name) {
+          details = cacheRes[song].details;
+        }
+      }
+    }
+    const song = new Song(params.artist, params.album, params.song, details);
     this.playQueue.enqueue(song);
   }
 
